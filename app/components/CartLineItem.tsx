@@ -1,13 +1,13 @@
-import type {CartLineUpdateInput} from '@shopify/hydrogen/storefront-api-types';
 import type {CartLayout} from '~/components/CartMain';
-import {CartForm, Image, type OptimisticCartLine} from '@shopify/hydrogen';
+import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link} from 'react-router';
+import {Link, useParams} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
+import {useState, useEffect} from 'react';
 
-type CartLine = OptimisticCartLine<CartApiQueryFragment>;
+type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
 /**
  * A single line item in the cart. It displays the product image, title, price.
@@ -54,13 +54,15 @@ export function CartLineItem({
         </Link>
         <ProductPrice price={line?.cost?.totalAmount} />
         <ul>
-          {selectedOptions.map((option) => (
-            <li key={option.name}>
-              <small>
-                {option.name}: {option.value}
-              </small>
-            </li>
-          ))}
+          {selectedOptions
+            .filter((option) => option.value !== 'Default Title')
+            .map((option) => (
+              <li key={option.name}>
+                <small>
+                  {option.name}: {option.value}
+                </small>
+              </li>
+            ))}
         </ul>
         <CartLineQuantity line={line} />
       </div>
@@ -70,99 +72,110 @@ export function CartLineItem({
 
 /**
  * Provides the controls to update the quantity of a line item in the cart.
- * These controls are disabled when the line item is new, and the server
- * hasn't yet responded that it was successfully added to the cart.
  */
 function CartLineQuantity({line}: {line: CartLine}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
-  const {id: lineId, quantity, isOptimistic} = line;
-  const prevQuantity = Number(Math.max(0, quantity - 1).toFixed(0));
-  const nextQuantity = Number((quantity + 1).toFixed(0));
+  const {id: lineId, quantity} = line;
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [inputQuantity, setInputQuantity] = useState(quantity.toString());
+  const params = useParams();
+  const locale = params.locale || 'en';
+
+  // Sync inputQuantity with actual quantity when cart updates
+  useEffect(() => {
+    setInputQuantity(quantity.toString());
+  }, [quantity]);
+
+  const handleUpdate = async (newQuantity: number) => {
+    if (newQuantity < 1) return;
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/${locale}/cart-update`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          lines: [{id: lineId, quantity: newQuantity}],
+        }),
+      });
+      
+      if (response.ok) {
+        console.log('✅ Update successful, reloading page...');
+        window.location.reload();
+      } else {
+        console.error('❌ Update failed:', response.status);
+        setIsUpdating(false);
+      }
+    } catch (error) {
+      console.error('Update failed:', error);
+      setIsUpdating(false);
+    }
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputQuantity(e.target.value);
+  };
+
+  const handleQuantityBlur = () => {
+    const newQty = parseInt(inputQuantity, 10);
+    if (!isNaN(newQty) && newQty > 0 && newQty !== quantity) {
+      handleUpdate(newQty);
+    } else {
+      setInputQuantity(quantity.toString());
+    }
+  };
+
+  const handleRemove = async () => {
+    setIsUpdating(true);
+    try {
+      console.log('🗑️ Removing item:', lineId);
+      const response = await fetch(`/${locale}/cart-remove`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          lineIds: [lineId],
+        }),
+      });
+      
+      if (response.ok) {
+        console.log('✅ Remove successful, reloading page...');
+        window.location.reload();
+      } else {
+        console.error('❌ Remove failed:', response.status);
+        setIsUpdating(false);
+      }
+    } catch (error) {
+      console.error('Remove failed:', error);
+      setIsUpdating(false);
+    }
+  };
 
   return (
-    <div className="cart-line-quantity">
-      <small>Quantity: {quantity} &nbsp;&nbsp;</small>
-      <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
-        <button
-          aria-label="Decrease quantity"
-          disabled={quantity <= 1 || !!isOptimistic}
-          name="decrease-quantity"
-          value={prevQuantity}
-        >
-          <span>&#8722; </span>
-        </button>
-      </CartLineUpdateButton>
-      &nbsp;
-      <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
-        <button
-          aria-label="Increase quantity"
-          name="increase-quantity"
-          value={nextQuantity}
-          disabled={!!isOptimistic}
-        >
-          <span>&#43;</span>
-        </button>
-      </CartLineUpdateButton>
-      &nbsp;
-      <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
-    </div>
-  );
-}
-
-/**
- * A button that removes a line item from the cart. It is disabled
- * when the line item is new, and the server hasn't yet responded
- * that it was successfully added to the cart.
- */
-function CartLineRemoveButton({
-  lineIds,
-  disabled,
-}: {
-  lineIds: string[];
-  disabled: boolean;
-}) {
-  return (
-    <CartForm
-      fetcherKey={getUpdateKey(lineIds)}
-      route="/cart"
-      action={CartForm.ACTIONS.LinesRemove}
-      inputs={{lineIds}}
-    >
-      <button disabled={disabled} type="submit">
+    <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
+      
+      <input
+        type="number"
+        value={inputQuantity}
+        onChange={handleQuantityChange}
+        onBlur={handleQuantityBlur}
+        disabled={isUpdating}
+        min="1"
+        style={{width: '50px', textAlign: 'center', padding: '0.25rem'}}
+      />
+      
+      <button 
+        onClick={handleRemove} 
+        disabled={isUpdating}
+        style={{
+          padding: '0.25rem 0.75rem',
+          cursor: 'pointer',
+          marginLeft: '0.5rem',
+          backgroundColor: 'white',
+          border: '1px solid black',
+          borderRadius: '4px'
+        }}
+      >
         Remove
       </button>
-    </CartForm>
+    </div>
   );
-}
-
-function CartLineUpdateButton({
-  children,
-  lines,
-}: {
-  children: React.ReactNode;
-  lines: CartLineUpdateInput[];
-}) {
-  const lineIds = lines.map((line) => line.id);
-
-  return (
-    <CartForm
-      fetcherKey={getUpdateKey(lineIds)}
-      route="/cart"
-      action={CartForm.ACTIONS.LinesUpdate}
-      inputs={{lines}}
-    >
-      {children}
-    </CartForm>
-  );
-}
-
-/**
- * Returns a unique key for the update action. This is used to make sure actions modifying the same line
- * items are not run concurrently, but cancel each other. For example, if the user clicks "Increase quantity"
- * and "Decrease quantity" in rapid succession, the actions will cancel each other and only the last one will run.
- * @param lineIds - line ids affected by the update
- * @returns
- */
-function getUpdateKey(lineIds: string[]) {
-  return [CartForm.ACTIONS.LinesUpdate, ...lineIds].join('-');
 }

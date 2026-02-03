@@ -1,4 +1,7 @@
+import '@fontsource/geist/400.css';        // Geist Regular
+import '@fontsource-variable/rethink-sans'; // Covers Regular → Medium → Bold etc.
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+
 import {
   Outlet,
   useRouteError,
@@ -15,7 +18,7 @@ import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
-import tailwindCss from './styles/tailwind.css?url';
+import globalStyles from '~/styles/globals.css?url';
 import {PageLayout} from './components/PageLayout';
 
 export type RootLoader = typeof loader;
@@ -150,9 +153,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <link rel="stylesheet" href={tailwindCss}></link>
+        <meta httpEquiv="Content-Security-Policy" content="default-src 'self' https://cdn.shopify.com https://shopify.com http://localhost:* 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://cdn.shopify.com https://img.youtube.com https://maps.googleapis.com https://maps.google.com https://www.google.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://maps.googleapis.com; frame-src 'self' https://www.youtube.com https://maps.google.com https://maps.googleapis.com https://www.google.com;" />
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={globalStyles}></link>
         <Meta />
         <Links />
       </head>

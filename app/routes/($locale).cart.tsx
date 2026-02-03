@@ -15,7 +15,73 @@ export async function action({request, context}: Route.ActionArgs) {
 
   const formData = await request.formData();
 
-  const {action, inputs} = CartForm.getFormInput(formData);
+  console.log('=== CART ACTION DEBUG ===');
+  console.log('FormData entries:');
+  for (const [key, value] of formData.entries()) {
+    console.log(`  ${key}:`, value);
+  }
+
+  // Check if this is a plain form submission
+  const cartAction = formData.get('cartAction');
+  
+  if (cartAction === 'ADD_TO_CART') {
+    // Handle plain form submission
+    console.log('✅ Plain form submission detected');
+    
+    const merchandiseId = formData.get('lines[0][merchandiseId]') as string;
+    const quantity = parseInt(formData.get('lines[0][quantity]') as string, 10);
+    
+    console.log('Merchandise ID:', merchandiseId);
+    console.log('Quantity:', quantity);
+    
+    const result = await cart.addLines([{
+      merchandiseId,
+      quantity,
+    }]);
+    
+    const cartId = result?.cart?.id;
+    const headers = cartId ? cart.setCartId(result.cart.id) : new Headers();
+    const {cart: cartResult, errors, warnings} = result;
+
+    const redirectTo = formData.get('redirectTo') ?? null;
+    let status = 200;
+    if (typeof redirectTo === 'string') {
+      status = 303;
+      headers.set('Location', redirectTo);
+    }
+
+    console.log('✅ Cart action complete');
+    console.log('=== END DEBUG ===');
+
+    return data(
+      {
+        cart: cartResult,
+        errors,
+        warnings,
+        analytics: {
+          cartId,
+        },
+      },
+      {status, headers},
+    );
+  }
+
+  // Otherwise, handle CartForm submission
+  let action: string | undefined;
+  let inputs: any;
+  
+  try {
+    const parsed = CartForm.getFormInput(formData);
+    action = parsed.action;
+    inputs = parsed.inputs;
+    console.log('✅ CartForm parsed action:', action);
+    console.log('✅ CartForm parsed inputs:', JSON.stringify(inputs, null, 2));
+  } catch (error) {
+    console.error('❌ Error parsing CartForm input:', error);
+    throw error;
+  }
+
+  console.log('=== END DEBUG ===');
 
   if (!action) {
     throw new Error('No action provided');
@@ -26,39 +92,33 @@ export async function action({request, context}: Route.ActionArgs) {
 
   switch (action) {
     case CartForm.ACTIONS.LinesAdd:
-      result = await cart.addLines(inputs.lines);
+      result = await cart.addLines(inputs.lines as any);
       break;
     case CartForm.ACTIONS.LinesUpdate:
-      result = await cart.updateLines(inputs.lines);
+      result = await cart.updateLines(inputs.lines as any);
       break;
     case CartForm.ACTIONS.LinesRemove:
-      result = await cart.removeLines(inputs.lineIds);
+      result = await cart.removeLines(inputs.lineIds as any);
       break;
     case CartForm.ACTIONS.DiscountCodesUpdate: {
       const formDiscountCode = inputs.discountCode;
-
-      // User inputted discount code
       const discountCodes = (
         formDiscountCode ? [formDiscountCode] : []
       ) as string[];
-
-      // Combine discount codes already applied on cart
-      discountCodes.push(...inputs.discountCodes);
-
+      if (inputs.discountCodes) {
+        discountCodes.push(...(inputs.discountCodes as string[]));
+      }
       result = await cart.updateDiscountCodes(discountCodes);
       break;
     }
     case CartForm.ACTIONS.GiftCardCodesUpdate: {
       const formGiftCardCode = inputs.giftCardCode;
-
-      // User inputted gift card code
       const giftCardCodes = (
         formGiftCardCode ? [formGiftCardCode] : []
       ) as string[];
-
-      // Combine gift card codes already applied on cart
-      giftCardCodes.push(...inputs.giftCardCodes);
-
+      if (inputs.giftCardCodes) {
+        giftCardCodes.push(...(inputs.giftCardCodes as string[]));
+      }
       result = await cart.updateGiftCardCodes(giftCardCodes);
       break;
     }

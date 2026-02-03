@@ -1,5 +1,5 @@
-import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from 'react-router';
+import {Suspense, useState} from 'react';
+import {Await, NavLink, useAsyncValue, Link, useLocation} from 'react-router';
 import {
   type CartViewPayload,
   useAnalytics,
@@ -7,15 +7,16 @@ import {
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
+import {ChevronDown, Menu, X, ShoppingCart, User} from 'lucide-react';
 
-interface HeaderProps {
+// Use the actual menu item type from Shopify
+type ShopifyMenuItem = NonNullable<HeaderQuery['menu']>['items'][0];
+type HeaderProps = {
   header: HeaderQuery;
-  cart: Promise<CartApiQueryFragment | null>;
-  isLoggedIn: Promise<boolean>;
+  cart: CartApiQueryFragment | null;
+  isLoggedIn: boolean;
   publicStoreDomain: string;
-}
-
-type Viewport = 'desktop' | 'mobile';
+};
 
 export function Header({
   header,
@@ -23,116 +24,341 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {shop, menu} = header;
-  return (
-    <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
-      </NavLink>
-      <HeaderMenu
-        menu={menu}
-        viewport="desktop"
-        primaryDomainUrl={header.shop.primaryDomain.url}
-        publicStoreDomain={publicStoreDomain}
-      />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
-    </header>
-  );
-}
+  const {menu} = header;
+  const location = useLocation();
+  const isStorePage = location.pathname.startsWith('/store');
+  
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [shopMenuOpen, setShopMenuOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<ShopifyMenuItem | null>(null);
 
-export function HeaderMenu({
-  menu,
-  primaryDomainUrl,
-  viewport,
-  publicStoreDomain,
-}: {
-  menu: HeaderProps['header']['menu'];
-  primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
-  viewport: Viewport;
-  publicStoreDomain: HeaderProps['publicStoreDomain'];
-}) {
-  const className = `header-menu-${viewport}`;
-  const {close} = useAside();
+  // Find the "Shop" menu item
+  const shopMenu = menu?.items.find(item => item.title === "Shop");
+  const shopCategories = shopMenu?.items ?? [];
+
+  // Helper to strip domain from URLs
+  const getLinkHref = (url: string | null | undefined) => {
+    if (!url) return '/';
+    if (url.includes('myshopify.com') || url.includes(publicStoreDomain)) {
+      return new URL(url).pathname;
+    }
+    return url;
+  };
 
   return (
-    <nav className={className} role="navigation">
-      {viewport === 'mobile' && (
-        <NavLink
-          end
-          onClick={close}
-          prefetch="intent"
-          style={activeLinkStyle}
-          to="/"
-        >
-          Home
-        </NavLink>
-      )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
-        if (!item.url) return null;
+    <header className="sticky top-0 z-50 w-full bg-[#24282E] text-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          
+          {/* Logo */}
+          <Link to="/" className="flex-shrink-0">
+            <img 
+              src="/images/vfg-logo-v2-cmyk-blue.webp" 
+              alt="Valley Feeds & General"
+              className="h-12 w-auto px-4"
+            />
+          </Link>
 
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        return (
-          <NavLink
-            className="header-menu-item"
-            end
-            key={item.id}
-            onClick={close}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1 flex-1">
+            {isStorePage ? (
+              /* STORE PAGE NAVIGATION */
+              <>
+                <a 
+                  href="https://valleyfeeds.com.au"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                >
+                  Valley Feeds Online
+                </a>
+                <a 
+                  href="https://www.foodbooking.com/ordering/restaurant/menu?company_uid=09c3dc3b-90e9-49db-840d-0eadc91eabf4&restaurant_uid=c4138f05-8354-4a9f-b0b0-f02fe8f1fea7&facebook=true"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                >
+                  Food Orders
+                </a>
+
+                <a 
+                  href="https://www.foodbooking.com/ordering/restaurant/menu?company_uid=09c3dc3b-90e9-49db-840d-0eadc91eabf4&restaurant_uid=c4138f05-8354-4a9f-b0b0-f02fe8f1fea7&facebook=true#primary-school-lunch"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                >
+                  School Lunches
+                </a>
+
+                <Link
+                  to="/store#post-office"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                >
+                  Post Office
+                </Link>
+
+                <a 
+                  href="tel:0358294205"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-2"
+                >
+                  📞 03 5829 4205
+                </a>
+              </>
+            ) : (
+              /* VALLEY FEEDS NAVIGATION */
+              <>
+                {/* Shop Dropdown */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => setShopMenuOpen(true)}
+                  onMouseLeave={() => {
+                    setShopMenuOpen(false);
+                    setActiveCategory(null);
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-1"
+                  >
+                    Shop
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+
+                  {shopMenuOpen && shopCategories.length > 0 && (
+                    <div className="absolute left-0 top-full flex bg-white text-stone-900 rounded-lg shadow-xl">
+                      {/* Left Column - Categories */}
+                      <div className="w-64 py-2">
+                        {shopCategories.map(category => {
+                          const categoryWithItems = category as ShopifyMenuItem;
+                          return (
+                            <Link
+                              key={category.id}
+                              to={getLinkHref(category.url)}
+                              onMouseEnter={() => setActiveCategory(categoryWithItems)}
+                              className={`block px-4 py-2 flex items-center justify-between transition-colors
+                                ${activeCategory?.id === category.id
+                                  ? "bg-stone-100"
+                                  : "hover:bg-stone-50"}
+                              `}
+                            >
+                              <span>{category.title}</span>
+                              {categoryWithItems.items && categoryWithItems.items.length > 0 && (
+                                <ChevronDown className="w-4 h-4 -rotate-90 opacity-50" />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+
+                      {/* Right Column - Subcategories */}
+                      {(activeCategory?.items?.length ?? 0) > 0 && (
+                        <div className="w-64 border-l border-stone-200 py-2">
+                          {activeCategory!.items.map(sub => (
+                            <Link
+                              key={sub.id}
+                              to={getLinkHref(sub.url)}
+                              className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors"
+                            >
+                              {sub.title}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Delivery Link */}
+                <a 
+                  href="https://valleyfeeds.com.au/pages/delivery"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                >
+                  Delivery
+                </a>
+
+                {/* Katandra West General Store */}
+                <Link
+                  to="/store"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                >
+                  Katandra West Store
+                </Link>
+
+                {/* Contact Link - Scroll to footer */}
+                <button
+                  onClick={() => {
+                    const footer = document.querySelector('footer');
+                    footer?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                >
+                  Contact
+                </button>
+
+                {/* Phone Number */}
+                <a 
+                  href="tel:0418278542"
+                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-2"
+                >
+                  📞 0418 278 542
+                </a>
+              </>
+            )}
+          </nav>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors ml-auto"
+            aria-label="Toggle menu"
           >
-            {item.title}
-          </NavLink>
-        );
-      })}
-    </nav>
-  );
-}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
 
-function HeaderCtas({
-  isLoggedIn,
-  cart,
-}: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
-  return (
-    <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-          </Await>
-        </Suspense>
-      </NavLink>
-      <SearchToggle />
-      <CartToggle cart={cart} />
-    </nav>
-  );
-}
+          {/* Right Side - Account & Cart (Only show on Valley Feeds pages) */}
+          {!isStorePage && (
+            <div className="hidden lg:flex items-center gap-2">
+              <NavLink 
+                to="/account" 
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                <Suspense fallback="Account">
+                  <Await resolve={isLoggedIn} errorElement="Sign in">
+                    {(isLoggedIn) => (
+                      <span className="text-sm">{isLoggedIn ? 'Account' : 'Sign in'}</span>
+                    )}
+                  </Await>
+                </Suspense>
+              </NavLink>
+              <CartToggle cart={cart} />
+            </div>
+          )}
+        </div>
 
-function HeaderMenuMobileToggle() {
-  const {open} = useAside();
-  return (
-    <button
-      className="header-menu-mobile-toggle reset"
-      onClick={() => open('mobile')}
-    >
-      <h3>☰</h3>
-    </button>
-  );
-}
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden pb-4 border-t border-white/10 pt-4 mt-2">
+            <nav className="flex flex-col gap-2">
+              {isStorePage ? (
+                /* STORE PAGE MOBILE MENU */
+                <>
+                  <a 
+                    href="https://www.foodbooking.com/ordering/restaurant/menu?company_uid=09c3dc3b-90e9-49db-840d-0eadc91eabf4&restaurant_uid=c4138f05-8354-4a9f-b0b0-f02fe8f1fea7&facebook=true"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Online Orders
+                  </a>
 
-function SearchToggle() {
-  const {open} = useAside();
-  return (
-    <button className="reset" onClick={() => open('search')}>
-      Search
-    </button>
+                  <a 
+                    href="https://www.foodbooking.com/ordering/restaurant/menu?company_uid=09c3dc3b-90e9-49db-840d-0eadc91eabf4&restaurant_uid=c4138f05-8354-4a9f-b0b0-f02fe8f1fea7&facebook=true#primary-school-lunch"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    School Lunches
+                  </a>
+
+                  <Link
+                    to="/store#post-office"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Post Office
+                  </Link>
+
+                  <a 
+                    href="tel:0358283431"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    📞 03 5828 3431
+                  </a>
+                </>
+              ) : (
+                /* VALLEY FEEDS MOBILE MENU */
+                <>
+                  {/* Mobile Shop - Top Level Categories Only */}
+                  {shopCategories.map(category => (
+                    <Link
+                      key={category.id}
+                      to={getLinkHref(category.url)}
+                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {category.title}
+                    </Link>
+                  ))}
+
+                  <a 
+                    href="https://valleyfeeds.com.au/pages/delivery"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Delivery
+                  </a>
+
+                  <Link
+                    to="/store"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Katandra West Store
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      const footer = document.querySelector('footer');
+                      footer?.scrollIntoView({ behavior: 'smooth' });
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                  >
+                    Contact
+                  </button>
+
+                  <a 
+                    href="tel:0418278542"
+                    className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    📞 0418 278 542
+                  </a>
+
+                  {/* Mobile Account & Cart (Only on Valley Feeds pages) */}
+                  <div className="border-t border-white/10 mt-2 pt-2 flex flex-col gap-2">
+                    <NavLink 
+                      to="/account" 
+                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <User className="w-5 h-5" />
+                      <Suspense fallback="Account">
+                        <Await resolve={isLoggedIn} errorElement="Sign in">
+                          {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
+                        </Await>
+                      </Suspense>
+                    </NavLink>
+                    
+                    <div onClick={() => setMobileMenuOpen(false)}>
+                      <CartToggle cart={cart} />
+                    </div>
+                  </div>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
+      </div>
+    </header>
   );
 }
 
@@ -141,8 +367,7 @@ function CartBadge({count}: {count: number | null}) {
   const {publish, shop, cart, prevCart} = useAnalytics();
 
   return (
-    <a
-      href="/cart"
+    <button
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -153,9 +378,15 @@ function CartBadge({count}: {count: number | null}) {
           url: window.location.href || '',
         } as CartViewPayload);
       }}
+      className="p-2 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
     >
-      Cart {count === null ? <span>&nbsp;</span> : count}
-    </a>
+      <ShoppingCart className="w-5 h-5" />
+      {count !== null && count > 0 && (
+        <span className="bg-[#1E91BA] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+          {count}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -171,61 +402,6 @@ function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
 
 function CartBanner() {
   const originalCart = useAsyncValue() as CartApiQueryFragment | null;
-  const cart = useOptimisticCart(originalCart);
+  const cart = originalCart;
   return <CartBadge count={cart?.totalQuantity ?? 0} />;
-}
-
-const FALLBACK_HEADER_MENU = {
-  id: 'gid://shopify/Menu/199655587896',
-  items: [
-    {
-      id: 'gid://shopify/MenuItem/461609500728',
-      resourceId: null,
-      tags: [],
-      title: 'Collections',
-      type: 'HTTP',
-      url: '/collections',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609533496',
-      resourceId: null,
-      tags: [],
-      title: 'Blog',
-      type: 'HTTP',
-      url: '/blogs/journal',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609566264',
-      resourceId: null,
-      tags: [],
-      title: 'Policies',
-      type: 'HTTP',
-      url: '/policies',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609599032',
-      resourceId: 'gid://shopify/Page/92591030328',
-      tags: [],
-      title: 'About',
-      type: 'PAGE',
-      url: '/pages/about',
-      items: [],
-    },
-  ],
-};
-
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'black',
-  };
 }
