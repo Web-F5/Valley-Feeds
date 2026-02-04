@@ -37,13 +37,18 @@ export function Header({
   const shopCategories = shopMenu?.items ?? [];
 
   // Helper to strip domain from URLs
-  const getLinkHref = (url: string | null | undefined) => {
-    if (!url) return '/';
-    if (url.includes('myshopify.com') || url.includes(publicStoreDomain)) {
-      return new URL(url).pathname;
-    }
+ // Add this helper function at the top of your Header component, before the return statement
+const getLinkHref = (url: string) => {
+  try {
+    const urlObj = new URL(url);
+    // Extract the pathname from the full Shopify URL
+    // e.g., "https://valleyfeeds.com.au/collections/horses" -> "/collections/horses"
+    return urlObj.pathname;
+  } catch {
+    // If it's already a relative path, return as-is
     return url;
-  };
+  }
+};
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#24282E] text-white shadow-lg">
@@ -65,7 +70,7 @@ export function Header({
               /* STORE PAGE NAVIGATION */
               <>
                 <a 
-                  href="https://valleyfeeds.com.au"
+                  href="/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"

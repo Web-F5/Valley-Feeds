@@ -1,27 +1,40 @@
+import type {Route} from './+types/cart-update';
 import {data} from 'react-router';
 
-export async function action({request, context}: {request: Request; context: any}) {
+export async function action({request, context}: Route.ActionArgs) {
   const {cart} = context;
-
+  
   try {
     const body = await request.text();
     const parsedData = JSON.parse(body) as {lines: Array<{id: string; quantity: number}>};
-
+    
     const result = await cart.updateLines(parsedData.lines);
-
+    
     const headers = new Headers();
     if (result?.cart?.id) {
       const cookieHeader = cart.setCartId(result.cart.id);
       headers.set('Set-Cookie', cookieHeader.get('Set-Cookie') || '');
     }
-
-    return data({success: true, cart: result.cart}, {status: 200, headers});
+    
+    return data({
+      success: true,
+      cart: result.cart,
+    }, {
+      status: 200,
+      headers,
+    });
+    
   } catch (error) {
     console.error('Cart update error:', error);
-    return data({success: false, error: error instanceof Error ? error.message : 'Unknown error'}, {status: 500});
+    return data({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, {
+      status: 500,
+    });
   }
 }
 
 export async function loader() {
-  return new Response(null, {status: 405});
+  return new Response(null, { status: 405 });
 }

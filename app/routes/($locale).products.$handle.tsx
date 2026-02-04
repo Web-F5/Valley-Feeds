@@ -7,36 +7,32 @@ import {
   getProductOptions,
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
+  Image,
 } from '@shopify/hydrogen';
 import {ProductPrice} from '~/components/ProductPrice';
-import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: `${data?.product.title ?? ''} | Valley Feeds & General`},
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,
+    },
+    {
+      name: 'description',
+      content: data?.product.description || '',
     },
   ];
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
@@ -49,77 +45,123 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
-  return {
-    product,
-  };
+  return {product};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
 function loadDeferredData({context, params}: Route.LoaderArgs) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
-
   return {};
 }
 
 export default function Product() {
   const {product} = useLoaderData<typeof loader>();
 
-  // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
     getAdjacentAndFirstAvailableVariants(product),
   );
 
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
   useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
 
-  // Get the product options array
   const productOptions = getProductOptions({
     ...product,
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
+  const {title, descriptionHtml, vendor} = product;
 
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        {/* Product Image */}
+        <div className="lg:sticky lg:top-8 h-fit">
+          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+            {selectedVariant?.image ? (
+              <Image
+                data={selectedVariant.image}
+                alt={selectedVariant.image.altText || title}
+                aspectRatio="1/1"
+                className="w-full object-contain"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+              />
+            ) : (
+              <div className="w-full aspect-square bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-400">No image available</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Product Info */}
+        <div className="space-y-6">
+          {/* Vendor */}
+          {vendor && (
+            <p className="text-sm text-gray-600 uppercase tracking-wide">
+              {vendor}
+            </p>
+          )}
+
+          {/* Title */}
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
+            {title}
+          </h1>
+
+          {/* Price */}
+          <div className="border-t border-b border-gray-200 py-6">
+            <ProductPrice
+              price={selectedVariant?.price}
+              compareAtPrice={selectedVariant?.compareAtPrice}
+            />
+          </div>
+
+          {/* Product Form (Variants & Add to Cart) */}
+          <ProductForm
+            productOptions={productOptions}
+            selectedVariant={selectedVariant}
+          />
+
+          {/* Availability */}
+          <div className="flex items-center gap-2">
+            {selectedVariant?.availableForSale ? (
+              <>
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-gray-600">In Stock</span>
+              </>
+            ) : (
+              <>
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span className="text-sm text-gray-600">Out of Stock</span>
+              </>
+            )}
+          </div>
+
+          {/* SKU */}
+          {selectedVariant?.sku && (
+            <p className="text-sm text-gray-500">
+              SKU: {selectedVariant.sku}
+            </p>
+          )}
+
+          {/* Description */}
+          {descriptionHtml && (
+            <div className="border-t border-gray-200 pt-6">
+              <h2 className="text-xl font-semibold mb-4">Description</h2>
+              <div
+                className="prose prose-sm max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{__html: descriptionHtml}}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
       <Analytics.ProductView
         data={{
           products: [

@@ -1,12 +1,12 @@
 import type {CartLayout} from '~/components/CartMain';
 import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link, useParams} from 'react-router';
+import {Link, useParams, useRevalidator} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useState, useEffect} from 'react';
-
+import {CartForm} from '@shopify/hydrogen';
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
 /**
@@ -76,106 +76,52 @@ export function CartLineItem({
 function CartLineQuantity({line}: {line: CartLine}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity} = line;
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [inputQuantity, setInputQuantity] = useState(quantity.toString());
-  const params = useParams();
-  const locale = params.locale || 'en';
-
-  // Sync inputQuantity with actual quantity when cart updates
-  useEffect(() => {
-    setInputQuantity(quantity.toString());
-  }, [quantity]);
-
-  const handleUpdate = async (newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setIsUpdating(true);
-    try {
-      const response = await fetch(`/${locale}/cart-update`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          lines: [{id: lineId, quantity: newQuantity}],
-        }),
-      });
-      
-      if (response.ok) {
-        console.log('✅ Update successful, reloading page...');
-        window.location.reload();
-      } else {
-        console.error('❌ Update failed:', response.status);
-        setIsUpdating(false);
-      }
-    } catch (error) {
-      console.error('Update failed:', error);
-      setIsUpdating(false);
-    }
-  };
-
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputQuantity(e.target.value);
-  };
-
-  const handleQuantityBlur = () => {
-    const newQty = parseInt(inputQuantity, 10);
-    if (!isNaN(newQty) && newQty > 0 && newQty !== quantity) {
-      handleUpdate(newQty);
-    } else {
-      setInputQuantity(quantity.toString());
-    }
-  };
-
-  const handleRemove = async () => {
-    setIsUpdating(true);
-    try {
-      console.log('🗑️ Removing item:', lineId);
-      const response = await fetch(`/${locale}/cart-remove`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          lineIds: [lineId],
-        }),
-      });
-      
-      if (response.ok) {
-        console.log('✅ Remove successful, reloading page...');
-        window.location.reload();
-      } else {
-        console.error('❌ Remove failed:', response.status);
-        setIsUpdating(false);
-      }
-    } catch (error) {
-      console.error('Remove failed:', error);
-      setIsUpdating(false);
-    }
-  };
 
   return (
     <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
-      
-      <input
-        type="number"
-        value={inputQuantity}
-        onChange={handleQuantityChange}
-        onBlur={handleQuantityBlur}
-        disabled={isUpdating}
-        min="1"
-        style={{width: '50px', textAlign: 'center', padding: '0.25rem'}}
-      />
-      
-      <button 
-        onClick={handleRemove} 
-        disabled={isUpdating}
-        style={{
-          padding: '0.25rem 0.75rem',
-          cursor: 'pointer',
-          marginLeft: '0.5rem',
-          backgroundColor: 'white',
-          border: '1px solid black',
-          borderRadius: '4px'
+      {/* 1. QUANTITY UPDATE FORM */}
+      <CartForm
+        route="/cart"
+        action={CartForm.ACTIONS.LinesUpdate}
+        inputs={{
+          lines: [{id: lineId, quantity: quantity - 1}],
         }}
       >
-        Remove
-      </button>
+        <button disabled={quantity <= 1} className="qty-btn">-</button>
+      </CartForm>
+
+      <span className="px-2">{quantity}</span>
+
+      <CartForm
+        route="/cart"
+        action={CartForm.ACTIONS.LinesUpdate}
+        inputs={{
+          lines: [{id: lineId, quantity: quantity + 1}],
+        }}
+      >
+        <button className="qty-btn">+</button>
+      </CartForm>
+
+      {/* 2. REMOVE ITEM FORM */}
+      <CartForm
+        route="/cart"
+        action={CartForm.ACTIONS.LinesRemove}
+        inputs={{lineIds: [lineId]}}
+      >
+        <button
+          type="submit"
+          style={{
+            padding: '0.25rem 0.75rem',
+            cursor: 'pointer',
+            marginLeft: '0.5rem',
+            backgroundColor: 'white',
+            border: '1px solid black',
+            borderRadius: '4px'
+          }}
+        >
+          Remove
+        </button>
+      </CartForm>
     </div>
   );
 }
