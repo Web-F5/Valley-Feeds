@@ -670,7 +670,7 @@ export type DeliveryPageQueryVariables = StorefrontAPI.Exact<{
 
 export type DeliveryPageQuery = {
   page?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Page, 'id' | 'title' | 'body'> & {
+    Pick<StorefrontAPI.Page, 'id' | 'title'> & {
       seo?: StorefrontAPI.Maybe<
         Pick<StorefrontAPI.Seo, 'description' | 'title'>
       >;
@@ -1245,7 +1245,7 @@ interface GeneratedQueryTypes {
     return: PageQuery;
     variables: PageQueryVariables;
   };
-  '#graphql\n  query DeliveryPage {\n    page(handle: "delivery") {\n      id\n      title\n      body\n      seo {\n        description\n        title\n      }\n    }\n  }\n': {
+  '#graphql\n  query DeliveryPage {\n    page(handle: "delivery") {\n      id\n      title\n      seo {\n        description\n        title\n      }\n    }\n  }\n': {
     return: DeliveryPageQuery;
     variables: DeliveryPageQueryVariables;
   };
