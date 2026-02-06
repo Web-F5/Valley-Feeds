@@ -12,6 +12,7 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteLoaderData,
+  useLocation,
 } from 'react-router';
 import type {Route} from './+types/root';
 import favicon from '~/assets/favicon.svg';
@@ -26,26 +27,19 @@ export type RootLoader = typeof loader;
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
  */
-export const shouldRevalidate: ShouldRevalidateFunction = ({
-  formMethod,
-  currentUrl,
-  nextUrl,
-}) => {
-  // revalidate when a mutation is performed e.g add to cart, login...
-  if (formMethod && formMethod !== 'GET') return true;
+export const shouldRevalidate: ShouldRevalidateFunction = (arg) => {
+  const {formMethod, defaultShouldRevalidate} = arg;
 
-  // revalidate when manually revalidating via useRevalidator
-  if (currentUrl.toString() === nextUrl.toString()) return true;
+  // If ANY form is submitted (like Remove from Cart), 
+  // we force the Root to refresh so the cart updates.
+  if (formMethod && formMethod !== 'GET') {
+    return true; 
+  }
 
-  // Defaulting to no revalidation for root loader data to improve performance.
-  // When using this feature, you risk your UI getting out of sync with your server.
-  // Use with caution. If you are uncomfortable with this optimization, update the
-  // line below to `return defaultShouldRevalidate` instead.
-  // For more details see: https://remix.run/docs/en/main/route/should-revalidate
-  return false;
+  return defaultShouldRevalidate;
 };
-
-/**
+/*
+ *
  * The main and reset stylesheets are added in the Layout component
  * to prevent a bug in development HMR updates.
  *
@@ -54,7 +48,9 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
  *
  * It's a temporary fix until the issue is resolved.
  * https://github.com/remix-run/remix/issues/9242
- */
+ *
+**/
+
 export function links() {
   return [
     {
@@ -102,19 +98,22 @@ export async function loader(args: Route.LoaderArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: Route.LoaderArgs) {
-  const {storefront} = context;
+  const {storefront, cart} = context; // Pull 'cart' from context here
 
-  const [header] = await Promise.all([
+  const [header, cartData] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
-        headerMenuHandle: 'main-menu', // Adjust to your header menu handle
+        headerMenuHandle: 'main-menu',
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
+    cart.get(), // This fetches the actual cart data
   ]);
 
-  return {header};
+  return {
+    header, 
+    cart: cartData // We return 'cartData' as 'cart'
+  };
 }
 
 /**
@@ -123,23 +122,19 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context}: Route.LoaderArgs) {
-  const {storefront, customerAccount, cart} = context;
+  const {storefront, customerAccount} = context;
 
-  // defer the footer query (below the fold)
   const footer = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
-      variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
-      },
+      variables: { footerMenuHandle: 'footer' },
     })
     .catch((error: Error) => {
-      // Log query errors, but don't throw them so the page can still render
       console.error(error);
       return null;
     });
+
   return {
-    cart: cart.get(),
     isLoggedIn: customerAccount.isLoggedIn(),
     footer,
   };
@@ -171,9 +166,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
 
 export default function App() {
   const data = useRouteLoaderData<RootLoader>('root');
+  const location = useLocation();
 
   if (!data) {
-    return <Outlet />;
+    return <Outlet key={location.pathname} />;
   }
 
   return (
@@ -183,7 +179,7 @@ export default function App() {
       consent={data.consent}
     >
       <PageLayout {...data}>
-        <Outlet />
+        <Outlet key={location.pathname} />
       </PageLayout>
     </Analytics.Provider>
   );

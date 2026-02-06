@@ -16,7 +16,7 @@ import {
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 
 interface PageLayoutProps {
-  cart: Promise<CartApiQueryFragment | null>;
+  cart: CartApiQueryFragment | null;
   footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
@@ -58,14 +58,13 @@ export function PageLayout({
 
 function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
   return (
-    <Aside type="cart" heading="CART">
-      <Suspense fallback={<p>Loading cart ...</p>}>
-        <Await resolve={cart}>
-          {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
-          }}
-        </Await>
-      </Suspense>
+    <Aside type="cart" heading="Cart">
+      <CartMain 
+        layout="aside" 
+        cart={cart} 
+        // cart is now a real object, so .id and .totalQuantity work!
+        key={cart?.id + (cart?.totalQuantity?.toString() || '0')} 
+      />
     </Aside>
   );
 }

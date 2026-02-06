@@ -1,18 +1,15 @@
 import type {CartLayout} from '~/components/CartMain';
 import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link, useParams, useRevalidator} from 'react-router';
+import {Link} from 'react-router'; // Stick to 'react-router'
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
-import {useState, useEffect} from 'react';
 import {CartForm} from '@shopify/hydrogen';
+import {useFetcher} from 'react-router'; // Add this to your imports
+
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
-/**
- * A single line item in the cart. It displays the product image, title, price.
- * It also provides controls to update the quantity or remove the line item.
- */
 export function CartLineItem({
   layout,
   line,
@@ -24,6 +21,9 @@ export function CartLineItem({
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
+
+  // Define this INSIDE the component
+  const cartRoute = '/cart';
 
   return (
     <li key={id} className="cart-line">
@@ -48,9 +48,7 @@ export function CartLineItem({
             }
           }}
         >
-          <p>
-            <strong>{product.title}</strong>
-          </p>
+          <p><strong>{product.title}</strong></p>
         </Link>
         <ProductPrice price={line?.cost?.totalAmount} />
         <ul>
@@ -58,28 +56,27 @@ export function CartLineItem({
             .filter((option) => option.value !== 'Default Title')
             .map((option) => (
               <li key={option.name}>
-                <small>
-                  {option.name}: {option.value}
-                </small>
+                <small>{option.name}: {option.value}</small>
               </li>
             ))}
         </ul>
-        <CartLineQuantity line={line} />
+        
+        <div style={{display: 'flex', alignItems: 'center', marginTop: '0.5rem'}}>
+          {/* We pass the cartRoute down or just use /cart inside the child */}
+          <CartLineQuantity line={line} />
+        </div>
       </div>
     </li>
   );
 }
 
-/**
- * Provides the controls to update the quantity of a line item in the cart.
- */
 function CartLineQuantity({line}: {line: CartLine}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity} = line;
 
   return (
     <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
-      {/* 1. QUANTITY UPDATE FORM */}
+      {/* 1. MINUS BUTTON */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
@@ -87,11 +84,15 @@ function CartLineQuantity({line}: {line: CartLine}) {
           lines: [{id: lineId, quantity: quantity - 1}],
         }}
       >
-        <button disabled={quantity <= 1} className="qty-btn">-</button>
+        <button disabled={quantity <= 0} className="qty-btn" 
+        onClick={() => setTimeout(() => window.location.reload(), 500)} // 0.5s delay
+        style={{width: '30px', height: '30px'}}>-</button>
       </CartForm>
 
-      <span className="px-2">{quantity}</span>
+      {/* 2. QUANTITY DISPLAY */}
+      <span style={{fontWeight: 'bold', minWidth: '20px', textAlign: 'center'}}>{quantity}</span>
 
+      {/* 3. PLUS BUTTON */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
@@ -99,24 +100,28 @@ function CartLineQuantity({line}: {line: CartLine}) {
           lines: [{id: lineId, quantity: quantity + 1}],
         }}
       >
-        <button className="qty-btn">+</button>
+        <button className="qty-btn" 
+        onClick={() => setTimeout(() => window.location.reload(), 500)} // 0.5s delay
+        style={{width: '30px', height: '30px'}}>+</button>
       </CartForm>
 
-      {/* 2. REMOVE ITEM FORM */}
+      {/* 4. REMOVE BUTTON (The Trigger) */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesRemove}
         inputs={{lineIds: [lineId]}}
       >
-        <button
+        <button 
           type="submit"
+          onClick={() => setTimeout(() => window.location.reload(), 800)} // slightly longer for removal
           style={{
             padding: '0.25rem 0.75rem',
             cursor: 'pointer',
             marginLeft: '0.5rem',
             backgroundColor: 'white',
             border: '1px solid black',
-            borderRadius: '4px'
+            borderRadius: '4px',
+            fontSize: '12px'
           }}
         >
           Remove

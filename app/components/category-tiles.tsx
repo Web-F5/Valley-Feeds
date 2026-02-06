@@ -6,37 +6,37 @@ const categories = [
     title: "Horses",
     description: "Complete range of horse feed, supplements & care",
     image: "./images/horseeating.webp",
-    href: "https://valleyfeeds.com.au/collections/horses",
+    href: "/collections/horses",
   },
   {
     title: "Dogs",
     description: "Premium dog food & health products",
     image: "./images/dogandsheep.webp",
-    href: "https://valleyfeeds.com.au/collections/dogs",
+    href: "/collections/dogs",
   },
   {
     title: "Cats",
     description: "Quality cat food & essentials",
     image: "./images/cat.webp",
-    href: "https://valleyfeeds.com.au/collections/cats",
+    href: "/collections/cats",
   },
   {
     title: "Bird and Poultry",
     description: "Specialized feeds for all your birds",
     image: "./images/chooks.webp",
-    href: "https://valleyfeeds.com.au/collections/bird-and-poultry",
+    href: "/collections/bird-and-poultry",
   },
   {
     title: "Livestock",
     description: "Cattle, sheep & livestock nutrition",
     image: "./images/cattle.webp",
-    href: "https://valleyfeeds.com.au/collections/livestock",
+    href: "/collections/livestock",
   },
   {
     title: "Farm Supplies",
     description: "Fencing, chemicals & farm essentials",
     image: "./images/farmsupplies.webp",
-    href: "https://valleyfeeds.com.au/collections/farm-supplies",
+    href: "/collections/farm-supplies",
   },
 ]
 

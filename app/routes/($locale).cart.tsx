@@ -98,7 +98,8 @@ export async function action({request, context}: Route.ActionArgs) {
       result = await cart.updateLines(inputs.lines as any);
       break;
     case CartForm.ACTIONS.LinesRemove:
-      result = await cart.removeLines(inputs.lineIds as any);
+      const lineIds = inputs.lineIds as string[];
+      result = await cart.removeLines(lineIds);
       break;
     case CartForm.ACTIONS.DiscountCodesUpdate: {
       const formDiscountCode = inputs.discountCode;
@@ -138,15 +139,12 @@ export async function action({request, context}: Route.ActionArgs) {
   }
 
   const cartId = result?.cart?.id;
-  const headers = cartId ? cart.setCartId(result.cart.id) : new Headers();
+  const headers = cart.setCartId(cartId); // Ensure headers always carry the ID
+
   const {cart: cartResult, errors, warnings} = result;
 
-  const redirectTo = formData.get('redirectTo') ?? null;
-  if (typeof redirectTo === 'string') {
-    status = 303;
-    headers.set('Location', redirectTo);
-  }
-
+  // If this was an AJAX request (from a CartForm), 
+  // we want to return the data so the UI can update.
   return data(
     {
       cart: cartResult,
@@ -156,10 +154,12 @@ export async function action({request, context}: Route.ActionArgs) {
         cartId,
       },
     },
-    {status, headers},
+    {
+      status: 200, // Explicitly keep it 200 for fetchers
+      headers,
+    },
   );
 }
-
 export async function loader({context}: Route.LoaderArgs) {
   const {cart} = context;
   return await cart.get();
@@ -171,7 +171,8 @@ export default function Cart() {
   return (
     <div className="cart">
       <h1>Cart</h1>
-      <CartMain layout="page" cart={cart} />
+      {/* Add the '?? null' to ensure it's never undefined */}
+      <CartMain layout="page" cart={cart ?? null} />
     </div>
   );
 }

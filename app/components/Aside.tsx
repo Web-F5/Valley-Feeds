@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from 'react';
+import {createPortal} from 'react-dom';
 
 type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
 type AsideContextValue = {
@@ -12,7 +13,11 @@ type AsideContextValue = {
   open: (mode: AsideType) => void;
   close: () => void;
 };
-
+type AsideProps = {
+  children?: React.ReactNode;
+  type: AsideType;
+  heading: React.ReactNode;
+};
 /**
  * A side bar component with Overlay
  * @example
@@ -23,22 +28,19 @@ type AsideContextValue = {
  * </Aside>
  * ```
  */
-export function Aside({
-  children,
-  heading,
-  type,
-}: {
-  children?: React.ReactNode;
-  type: AsideType;
-  heading: React.ReactNode;
-}) {
+export function Aside({ children, heading, type }: AsideProps) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const abortController = new AbortController();
+    setMounted(true);
+     const abortController = new AbortController();
 
     if (expanded) {
+      // Prevent scrolling the main page when cart is open
+      document.body.style.overflow = 'hidden'; 
+      
       document.addEventListener(
         'keydown',
         function handler(event: KeyboardEvent) {
@@ -49,26 +51,38 @@ export function Aside({
         {signal: abortController.signal},
       );
     }
-    return () => abortController.abort();
+    return () => {
+      abortController.abort();
+      document.body.style.overflow = ''; // Cleanup scroll lock
+    };
   }, [close, expanded]);
 
-  return (
-    <div
-      aria-modal
-      className={`overlay ${expanded ? 'expanded' : ''}`}
+  // If we aren't mounted yet (Server Side), render nothing or a hidden div
+  if (!mounted || typeof document === 'undefined') return null;
+
+  // 3. Wrap everything in createPortal to document.body
+  return createPortal(
+    <div 
+      aria-modal 
+      className={`overlay ${expanded ? 'expanded' : ''}`} 
       role="dialog"
+      style={{ 
+        position: 'fixed', 
+        inset: 0, 
+        zIndex: 9999, // Force it to the front
+        display: expanded ? 'block' : 'none' // Ensure it only exists when expanded
+      }}
     >
       <button className="close-outside" onClick={close} />
-      <aside>
+      <aside style={{ zIndex: 10000 }}> 
         <header>
           <h3>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
-            &times;
-          </button>
+          <button className="close reset" onClick={close}>&times;</button>
         </header>
         <main>{children}</main>
       </aside>
-    </div>
+    </div>,
+    document.body
   );
 }
 
