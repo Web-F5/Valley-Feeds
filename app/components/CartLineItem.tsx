@@ -1,12 +1,11 @@
 import type {CartLayout} from '~/components/CartMain';
 import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link} from 'react-router'; // Stick to 'react-router'
+import {Link} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {CartForm} from '@shopify/hydrogen';
-import {useFetcher} from 'react-router'; // Add this to your imports
 
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
@@ -21,9 +20,6 @@ export function CartLineItem({
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
-
-  // Define this INSIDE the component
-  const cartRoute = '/cart';
 
   return (
     <li key={id} className="cart-line">
@@ -62,7 +58,6 @@ export function CartLineItem({
         </ul>
         
         <div style={{display: 'flex', alignItems: 'center', marginTop: '0.5rem'}}>
-          {/* We pass the cartRoute down or just use /cart inside the child */}
           <CartLineQuantity line={line} />
         </div>
       </div>
@@ -76,7 +71,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
 
   return (
     <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
-      {/* 1. MINUS BUTTON */}
+      {/* 1. MINUS BUTTON - No onClick needed! */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
@@ -84,15 +79,22 @@ function CartLineQuantity({line}: {line: CartLine}) {
           lines: [{id: lineId, quantity: quantity - 1}],
         }}
       >
-        <button disabled={quantity <= 0} className="qty-btn" 
-        onClick={() => setTimeout(() => window.location.reload(), 500)} // 0.5s delay
-        style={{width: '30px', height: '30px'}}>-</button>
+        <button 
+          disabled={quantity <= 1} 
+          className="qty-btn" 
+          type="submit"
+          style={{width: '30px', height: '30px'}}
+        >
+          -
+        </button>
       </CartForm>
 
       {/* 2. QUANTITY DISPLAY */}
-      <span style={{fontWeight: 'bold', minWidth: '20px', textAlign: 'center'}}>{quantity}</span>
+      <span style={{fontWeight: 'bold', minWidth: '20px', textAlign: 'center'}}>
+        {quantity}
+      </span>
 
-      {/* 3. PLUS BUTTON */}
+      {/* 3. PLUS BUTTON - No onClick needed! */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
@@ -100,12 +102,16 @@ function CartLineQuantity({line}: {line: CartLine}) {
           lines: [{id: lineId, quantity: quantity + 1}],
         }}
       >
-        <button className="qty-btn" 
-        onClick={() => setTimeout(() => window.location.reload(), 500)} // 0.5s delay
-        style={{width: '30px', height: '30px'}}>+</button>
+        <button 
+          className="qty-btn" 
+          type="submit"
+          style={{width: '30px', height: '30px'}}
+        >
+          +
+        </button>
       </CartForm>
 
-      {/* 4. REMOVE BUTTON (The Trigger) */}
+      {/* 4. REMOVE BUTTON - No onClick needed! */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesRemove}
@@ -113,7 +119,6 @@ function CartLineQuantity({line}: {line: CartLine}) {
       >
         <button 
           type="submit"
-          onClick={() => setTimeout(() => window.location.reload(), 800)} // slightly longer for removal
           style={{
             padding: '0.25rem 0.75rem',
             cursor: 'pointer',

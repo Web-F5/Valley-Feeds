@@ -84,9 +84,9 @@ export function PopularProducts({products}: {products: any[]}) {
   // Don't render carousel until mounted on client
   if (!mounted) {
     return (
-      <section className="w-full py-16 md:py-24 bg-gray-50 relative">
+      <section id="popular-products" className="w-full py-16 md:py-24 bg-gray-50 relative">
         <div className="max-w-7xl mx-auto px-4 text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold">Popular Products</h2>
+          <h2  className="text-3xl md:text-4xl font-bold">Popular Products</h2>
           <p className="text-lg text-stone-600">
             Top-selling products in feeds & supplies
           </p>
@@ -118,7 +118,7 @@ export function PopularProducts({products}: {products: any[]}) {
   }
 
   return (
-    <section className="w-full py-16 md:py-24 bg-gray-50 relative">
+    <section id="popular-products" className="w-full py-16 md:py-24 bg-gray-50 relative">
       <div className="max-w-7xl mx-auto px-4 text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold">Popular Products</h2>
         <p className="text-lg text-stone-600">

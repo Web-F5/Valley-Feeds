@@ -5,6 +5,8 @@ import type {
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
+import {useRouteLoaderData} from 'react-router';
+import type {RootLoader} from '~/root';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header} from '~/components/Header';
@@ -16,7 +18,6 @@ import {
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 
 interface PageLayoutProps {
-  cart: CartApiQueryFragment | null;
   footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
@@ -25,24 +26,29 @@ interface PageLayoutProps {
 }
 
 export function PageLayout({
-  cart,
   children = null,
   footer,
   header,
   isLoggedIn,
   publicStoreDomain,
 }: PageLayoutProps) {
+  // ✅ Get cart data directly from root loader - this updates automatically
+  const rootData = useRouteLoaderData<RootLoader>('root');
+  const cart = rootData?.cart ?? null;
+
   return (
     <Aside.Provider>
+      {/* ✅ Now CartAside gets fresh cart data on every revalidation */}
       <CartAside cart={cart} />
       <SearchAside />
       <Suspense fallback={null}>
-        <Await resolve={Promise.all([cart, isLoggedIn])}>
-          {([resolvedCart, resolvedIsLoggedIn]) =>
+        {/* Only await isLoggedIn since cart is already resolved */}
+        <Await resolve={isLoggedIn}>
+          {(resolvedIsLoggedIn) =>
             header && (
               <Header
                 header={header}
-                cart={resolvedCart}
+                cart={cart} // ✅ Use cart directly - it's already resolved
                 isLoggedIn={resolvedIsLoggedIn}
                 publicStoreDomain={publicStoreDomain}
               />
@@ -56,13 +62,14 @@ export function PageLayout({
   );
 }
 
-function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
+import type {CartMainProps} from '~/components/CartMain';
+
+function CartAside({cart}: {cart: CartMainProps['cart']}) {
   return (
     <Aside type="cart" heading="Cart">
       <CartMain 
         layout="aside" 
         cart={cart} 
-        // cart is now a real object, so .id and .totalQuantity work!
         key={cart?.id + (cart?.totalQuantity?.toString() || '0')} 
       />
     </Aside>

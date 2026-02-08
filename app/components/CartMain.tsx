@@ -20,39 +20,14 @@ export type CartMainProps = {
  */
 
 export function CartMain({layout, cart}: CartMainProps) {
-  const revalidator = useRevalidator();
-  const fetchers = useFetchers();
-
-  // 1. Monitor all active forms. 
-  // This finds any fetcher currently adding, updating, or removing lines.
-  const isCartUpdating = useMemo(() => {
-    return fetchers.some((f) => {
-      const formData = f.formData;
-      if (!formData) return false;
-      const cartInput = formData.get('cartFormInput');
-      // This catches LinesRemove, LinesUpdate, and LinesAdd
-      return cartInput && cartInput.toString().includes('Lines');
-    });
-  }, [fetchers]);
-
-  // 2. The Magic Sync: 
-  // When 'isCartUpdating' changes from true to false (action finished),
-  // we tell the entire app: "The data is dirty, re-run all loaders now."
-  useEffect(() => {
-    if (!isCartUpdating && revalidator.state === 'idle') {
-      revalidator.revalidate();
-    }
-  }, [isCartUpdating, revalidator]);
-
+  // Remove all the revalidator and fetchers logic
+  // Just render the cart directly:
+  
   const linesCount = cart?.lines?.nodes?.length || 0;
   const cartHasItems = linesCount > 0;
 
   return (
-    /* We use a combined key of ID and totalQuantity to force a DOM reset */
-    <div 
-      className="cart-main" 
-      key={cart?.id + (cart?.totalQuantity?.toString() || '0')}
-    >
+    <div className="cart-main">
       <CartEmpty hidden={cartHasItems} layout={layout} />
       <div className="cart-details">
         <ul>
@@ -95,7 +70,7 @@ function CartEmpty({
         started!
       </p>
       <br />
-      <Link to="/collections" onClick={close} prefetch="viewport">
+      <Link to="/#popular-products" onClick={close} prefetch="viewport">
         Continue shopping →
       </Link>
     </div>

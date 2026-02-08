@@ -178,7 +178,13 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
-      <PageLayout {...data}>
+      {/* ❌ Remove cart prop - PageLayout will get it via useRouteLoaderData */}
+      <PageLayout 
+        footer={data.footer}
+        header={data.header}
+        isLoggedIn={data.isLoggedIn}
+        publicStoreDomain={data.publicStoreDomain}
+      >
         <Outlet key={location.pathname} />
       </PageLayout>
     </Analytics.Provider>
