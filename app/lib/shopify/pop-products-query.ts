@@ -31,6 +31,8 @@ export async function getPopularProducts(storefront: any) {
                     amount
                     currencyCode
                   }
+                  weight
+                  weightUnit
                 }
               }
               images(first: 1) {

@@ -26,9 +26,12 @@ export async function getMonthlySpecials() {
                 variants(first: 1) {
                   edges {
                     node {
+                      id
                       compareAtPrice {
                         amount
                       }
+                      weight
+                      weightUnit
                     }
                   }
                 }
@@ -49,11 +52,9 @@ export async function getMonthlySpecials() {
             process.env.SHOPIFY_STOREFRONT_TOKEN!,
         },
         body: JSON.stringify({ query }),
-        next: { revalidate: 3600 }, // optional ISR
       }
     )
   
-    const json = await res.json()
+    const json = await res.json() as any; // Add type assertion
     return json.data.collectionByHandle.products.edges
   }
-  

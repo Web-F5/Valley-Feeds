@@ -34,6 +34,8 @@ export const CART_QUERY_FRAGMENT = `#graphql
         }
         requiresShipping
         title
+        weight          
+        weightUnit
         image {
           id
           url
@@ -85,6 +87,8 @@ export const CART_QUERY_FRAGMENT = `#graphql
         }
         requiresShipping
         title
+        weight         
+        weightUnit
         image {
           id
           url

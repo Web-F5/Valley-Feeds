@@ -95,6 +95,7 @@ export function PopularProducts({products}: {products: any[]}) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {products.map((product) => {
               const variant = product.variants?.nodes?.[0];
+              console.log('Variant data:', variant);
               if (!variant?.id || !product.priceRange) return null;
               const price = Number(product.priceRange.minVariantPrice.amount);
               const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
@@ -184,6 +185,30 @@ export function PopularProducts({products}: {products: any[]}) {
 
 function ProductCard({product, variant, price, compareAt, image}: any) {
   const [isAdding, setIsAdding] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Get weight - the variant is already extracted from edges/nodes
+  const variantWeight = variant?.weight;
+  const weightUnit = variant?.weightUnit;
+  
+  // Convert to kg based on the unit
+  let weightInKg = 0;
+  if (variantWeight && weightUnit) {
+    if (weightUnit === 'KILOGRAMS') {
+      weightInKg = variantWeight;
+    } else if (weightUnit === 'GRAMS') {
+      weightInKg = variantWeight / 1000;
+    } else if (weightUnit === 'POUNDS') {
+      weightInKg = variantWeight * 0.453592;
+    } else if (weightUnit === 'OUNCES') {
+      weightInKg = variantWeight * 0.0283495;
+    }
+  }
+  
+  const isOverWeightLimit = weightInKg > 22;
+
+  // Debug
+  console.log('Popular Product:', product.title, 'Weight:', variantWeight, weightUnit, 'KG:', weightInKg);
 
   const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,6 +246,7 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
     <div className="flex-shrink-0 w-1/2 md:w-1/3 lg:w-1/6 px-3">
       <div className="border rounded-lg overflow-hidden h-full bg-white shadow-sm hover:shadow-md transition-shadow">
         <div className="flex flex-col h-full">
+          {/* Image Link */}
           <Link to={`/products/${product.handle}`}>
             {image ? (
               <Image
@@ -238,6 +264,7 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
           </Link>
 
           <div className="flex flex-col p-3 h-full">
+            {/* Title Link */}
             <Link to={`/products/${product.handle}`}>
               <h3 className="text-sm font-semibold line-clamp-2 mb-2 hover:text-emerald-700">
                 {product.title}
@@ -259,6 +286,32 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
                       currency: 'AUD',
                     }).format(compareAt)}
                   </span>
+                )}
+                
+                {/* Weight Warning Icon with Tooltip */}
+                {isOverWeightLimit && (
+                  <div 
+                    className="relative ml-auto"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                  >
+                    <span className="text-amber-600 cursor-help text-lg">⚠️</span>
+                    
+                    {showTooltip && (
+                      <div className="absolute bottom-full right-0 mb-2 w-64 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
+                        <div className="text-xs text-amber-800">
+                          <strong className="block mb-1">Heavy Item Shipping Notice</strong>
+                          <p>This item exceeds Australia Post's 22kg limit, or restricted via Australia Post rules.</p> 
+                          <p>Local delivery is available within 100km of Katandra West.</p>
+                          <p>Outside of this range will require you to arrange a courier.</p>
+                        </div>
+                        {/* Arrow pointing down */}
+                        <div className="absolute top-full right-4 -mt-1">
+                          <div className="border-8 border-transparent border-t-amber-200"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 

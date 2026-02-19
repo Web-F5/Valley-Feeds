@@ -2,7 +2,7 @@ export function TrustSection() {
   const features = [
     {
       title: "Locally Owned & Operated",
-      description: "Serving the Greater Shepparton community for over 50 years",
+      description: "Serving the Goulburn Valley community for over 10 years",
     },
     {
       title: "Expert Advice",

@@ -9,6 +9,8 @@ import {CartForm} from '@shopify/hydrogen';
 
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
+const WEIGHT_LIMIT_KG = 22;
+
 export function CartLineItem({
   layout,
   line,
@@ -17,9 +19,25 @@ export function CartLineItem({
   line: CartLine;
 }) {
   const {id, merchandise} = line;
-  const {product, title, image, selectedOptions} = merchandise;
+  const {product, title, image, selectedOptions, weight, weightUnit} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
+
+  // Calculate weight
+  let weightInKg = 0;
+  if (weight && weightUnit) {
+    if (weightUnit === 'KILOGRAMS') {
+      weightInKg = weight;
+    } else if (weightUnit === 'GRAMS') {
+      weightInKg = weight / 1000;
+    } else if (weightUnit === 'POUNDS') {
+      weightInKg = weight * 0.453592;
+    } else if (weightUnit === 'OUNCES') {
+      weightInKg = weight * 0.0283495;
+    }
+  }
+  
+  const isOverWeightLimit = weightInKg > WEIGHT_LIMIT_KG;
 
   return (
     <li key={id} className="cart-line">
@@ -47,6 +65,31 @@ export function CartLineItem({
           <p><strong>{product.title}</strong></p>
         </Link>
         <ProductPrice price={line?.cost?.totalAmount} />
+        
+        {/* Heavy Item Warning */}
+        {isOverWeightLimit && (
+          <div style={{
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            padding: '0.5rem',
+            marginTop: '0.5rem',
+            fontSize: '0.875rem'
+          }}>
+            <div style={{display: 'flex', alignItems: 'start', gap: '0.5rem'}}>
+              <span style={{fontSize: '1rem'}}>⚠️</span>
+              <div style={{color: '#856404'}}>
+                <strong>Heavy Item Shipping Notice</strong>
+                <p style={{margin: '0.25rem 0 0 0', fontSize: '0.75rem'}}>
+                  <p>This item exceeds Australia Post's 22kg limit, or restricted via Australia Post rules.</p> 
+                  <p>Local delivery is available within 100km of Katandra West.</p>
+                  <p>Outside of this range will require you to arrange a courier.</p>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <ul>
           {selectedOptions
             .filter((option) => option.value !== 'Default Title')

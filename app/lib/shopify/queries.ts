@@ -37,6 +37,8 @@ export async function getMonthlySpecials(storefront: any) {
                     name
                     value
                   }
+                  weight
+                  weightUnit
                   # Add product reference for the variant
                   product {
                     id

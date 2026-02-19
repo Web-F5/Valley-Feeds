@@ -3,6 +3,8 @@ import {Image, Money} from '@shopify/hydrogen';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useState} from 'react';
 
+const WEIGHT_LIMIT_KG = 22;
+
 export function ProductItem({
   product,
   loading,
@@ -14,6 +16,32 @@ export function ProductItem({
   const compareAtPrice = product.compareAtPriceRange?.minVariantPrice;
   const price = product.priceRange.minVariantPrice;
   const hasDiscount = compareAtPrice && Number(compareAtPrice.amount) > Number(price.amount);
+
+  // Get weight from first variant
+  const variantWeight = product.variants?.nodes?.[0]?.weight;
+  const weightUnit = product.variants?.nodes?.[0]?.weightUnit;
+  
+  // Convert to kg based on the unit
+  let weightInKg = 0;
+  if (variantWeight && weightUnit) {
+    if (weightUnit === 'KILOGRAMS') {
+      weightInKg = variantWeight;
+    } else if (weightUnit === 'GRAMS') {
+      weightInKg = variantWeight / 1000;
+    } else if (weightUnit === 'POUNDS') {
+      weightInKg = variantWeight * 0.453592;
+    } else if (weightUnit === 'OUNCES') {
+      weightInKg = variantWeight * 0.0283495;
+    }
+  }
+  
+  const isOverWeightLimit = weightInKg > WEIGHT_LIMIT_KG;
+
+  // Remove debug logs once confirmed working
+  console.log('Product:', product.title);
+  console.log('Raw weight:', variantWeight, weightUnit);
+  console.log('Weight in KG:', weightInKg);
+  console.log('Over limit?:', isOverWeightLimit);
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -80,6 +108,21 @@ export function ProductItem({
           </h3>
         </Link>
 
+        {/* Heavy Item Warning */}
+        {isOverWeightLimit && (
+          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-md p-3">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 text-lg flex-shrink-0">⚠️</span>
+              <div className="text-xs text-amber-800">
+                <strong className="block mb-1">Heavy Item Shipping Notice</strong>
+                <p>This item exceeds Australia Post's 22kg limit, or restricted via Australia Post rules.</p> 
+                <p>Local delivery is available within 100km of Katandra West.</p>
+                <p>Outside of this range will require you to arrange a courier.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Price and Button - Always at bottom */}
         <div className="mt-4">
           {/* Price */}
@@ -98,7 +141,7 @@ export function ProductItem({
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="w-full  bg-[#2092bb] hover:bg-[#1a7aa0] text-white font-medium py-2 px-4 rounded-md text-sm transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full bg-[#2092bb] hover:bg-[#1a7aa0] text-white font-medium py-2 px-4 rounded-md text-sm transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {isAdding ? 'Adding...' : 'Add to Cart'}
           </button>

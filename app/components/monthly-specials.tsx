@@ -1,4 +1,5 @@
 // app/components/monthly-specials.tsx - DIRECT API CALLS
+import {Link, useNavigation} from 'react-router';
 import {Image} from '@shopify/hydrogen';
 import {Button} from '~/components/ui/button';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -159,6 +160,30 @@ export function MonthlySpecials({products}: {products: any[]}) {
 
 function ProductCard({product, variant, price, compareAt, image}: any) {
   const [isAdding, setIsAdding] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Get weight - the variant is already extracted from edges/nodes
+  const variantWeight = variant?.weight;
+  const weightUnit = variant?.weightUnit;
+  
+  // Convert to kg based on the unit
+  let weightInKg = 0;
+  if (variantWeight && weightUnit) {
+    if (weightUnit === 'KILOGRAMS') {
+      weightInKg = variantWeight;
+    } else if (weightUnit === 'GRAMS') {
+      weightInKg = variantWeight / 1000;
+    } else if (weightUnit === 'POUNDS') {
+      weightInKg = variantWeight * 0.453592;
+    } else if (weightUnit === 'OUNCES') {
+      weightInKg = variantWeight * 0.0283495;
+    }
+  }
+  
+  const isOverWeightLimit = weightInKg > 22;
+
+  // Debug
+  console.log('Popular Product:', product.title, 'Weight:', variantWeight, weightUnit, 'KG:', weightInKg);
 
   const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,7 +204,6 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
       const result = await response.json() as {success: boolean; error?: string};
 
       if (result.success) {
-        // Success! Reload to update cart count
         window.location.reload();
       } else {
         console.error('Failed to add to cart:', result.error);
@@ -194,27 +218,33 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
   };
 
   return (
-    <div className="flex-shrink-0 basis-1/2 md:basis-1/3 lg:basis-1/6 px-3">
+    <div className="flex-shrink-0 w-1/2 md:w-1/3 lg:w-1/6 px-3">
       <div className="border rounded-lg overflow-hidden h-full bg-white shadow-sm hover:shadow-md transition-shadow">
         <div className="flex flex-col h-full">
-          {image ? (
-            <Image
-              data={image}
-              aspectRatio="1/1"
-              sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"
-              className="w-full object-cover"
-              loading="eager"
-            />
-          ) : (
-            <div className="w-full aspect-square bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
-              No Image
-            </div>
-          )}
+          {/* Image Link */}
+          <Link to={`/products/${product.handle}`}>
+            {image ? (
+              <Image
+                data={image}
+                aspectRatio="1/1"
+                sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"
+                className="w-full object-cover"
+                loading="eager"
+              />
+            ) : (
+              <div className="w-full aspect-square bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
+                No Image
+              </div>
+            )}
+          </Link>
 
           <div className="flex flex-col p-3 h-full">
-            <h3 className="text-sm font-semibold line-clamp-2 mb-2">
-              {product.title}
-            </h3>
+            {/* Title Link */}
+            <Link to={`/products/${product.handle}`}>
+              <h3 className="text-sm font-semibold line-clamp-2 mb-2 hover:text-emerald-700">
+                {product.title}
+              </h3>
+            </Link>
 
             <div className="mt-auto">
               <div className="flex items-center gap-2 mb-3">
@@ -231,6 +261,32 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
                       currency: 'AUD',
                     }).format(compareAt)}
                   </span>
+                )}
+                
+                {/* Weight Warning Icon with Tooltip */}
+                {isOverWeightLimit && (
+                  <div 
+                    className="relative ml-auto"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                  >
+                    <span className="text-amber-600 cursor-help text-lg">⚠️</span>
+                    
+                    {showTooltip && (
+                      <div className="absolute bottom-full right-0 mb-2 w-64 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
+                        <div className="text-xs text-amber-800">
+                          <strong className="block mb-1">Heavy Item Shipping Notice</strong>
+                          <p>This item exceeds Australia Post's 22kg limit, or restricted via Australia Post rules.</p> 
+                          <p>Local delivery is available within 100km of Katandra West.</p>
+                          <p>Outside of this range will require you to arrange a courier.</p>
+                        </div>
+                        {/* Arrow pointing down */}
+                        <div className="absolute top-full right-4 -mt-1">
+                          <div className="border-8 border-transparent border-t-amber-200"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 

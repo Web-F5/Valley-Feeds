@@ -6,7 +6,7 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 
-export const meta: Route.MetaFunction = ({data}) => {
+export const meta: Route.MetaFunction = ({data}: Route.MetaArgs) => {
   return [
     {title: `${data?.collection.title ?? 'Collection'} | Valley Feeds & General`},
     {
@@ -132,6 +132,8 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     variants(first: 1) {
       nodes {
         id
+        weight
+        weightUnit
       }
     }
   }

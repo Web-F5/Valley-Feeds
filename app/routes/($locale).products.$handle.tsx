@@ -13,7 +13,7 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductForm} from '~/components/ProductForm';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
-export const meta: Route.MetaFunction = ({data}) => {
+export const meta: Route.MetaFunction = ({data}: Route.MetaArgs) => {
   return [
     {title: `${data?.product.title ?? ''} | Valley Feeds & General`},
     {
@@ -77,6 +77,28 @@ export default function Product() {
 
   const {title, descriptionHtml, vendor} = product;
 
+  // Calculate weight
+  const WEIGHT_LIMIT_KG = 22;
+  const variantWeight = selectedVariant?.weight;
+  const weightUnit = selectedVariant?.weightUnit;
+  
+  let weightInKg = 0;
+  if (variantWeight && weightUnit) {
+    if (weightUnit === 'KILOGRAMS') {
+      weightInKg = variantWeight;
+    } else if (weightUnit === 'GRAMS') {
+      weightInKg = variantWeight / 1000;
+    } else if (weightUnit === 'POUNDS') {
+      weightInKg = variantWeight * 0.453592;
+    } else if (weightUnit === 'OUNCES') {
+      weightInKg = variantWeight * 0.0283495;
+    }
+  }
+  
+  const isOverWeightLimit = weightInKg > WEIGHT_LIMIT_KG;
+
+  console.log('Product Page:', title, 'Weight:', variantWeight, weightUnit, 'KG:', weightInKg);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -120,6 +142,21 @@ export default function Product() {
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
           </div>
+
+          {/* Heavy Item Warning - ADD THIS */}
+          {isOverWeightLimit && (
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-amber-600 text-2xl flex-shrink-0">⚠️</span>
+                <div className="text-sm text-amber-800">
+                  <strong className="block mb-1 text-base">Heavy Item Shipping Notice</strong>
+                  <p>This item exceeds Australia Post's 22kg limit, or restricted via Australia Post rules.</p> 
+                  <p>Local delivery is available within 100km of Katandra West.</p>
+                  <p>Outside of this range will require you to arrange a courier.</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Product Form (Variants & Add to Cart) */}
           <ProductForm
@@ -215,6 +252,8 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
       amount
       currencyCode
     }
+    weight
+    weightUnit
   }
 ` as const;
 
