@@ -308,9 +308,6 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
                           <p className="mb-1">Local delivery within 100km of Katandra West available.</p>
                           <p>Otherwise arrange courier.</p>
                         </div>
-                        <div className="absolute top-full right-4 -mt-1">
-                          <div className="border-8 border-transparent border-t-amber-200"></div>
-                        </div>
                       </div>
                       
                       {/* Mobile tooltip - centered above card */}
