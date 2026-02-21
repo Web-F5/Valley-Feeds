@@ -114,7 +114,34 @@ export function HeroSection() {
             </button>
           </div>
 
-          {/* Autocomplete results... */}
+          {/* Autocomplete results */}
+{open && results.length > 0 && (
+  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+    {results.map((product) => (
+     <a key={product.id}
+        href={product.url}
+        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition text-left"
+        onClick={() => setOpen(false)}
+      >
+        {product.image && (
+          <img
+            src={product.image}
+            alt={product.title}
+            className="w-10 h-10 object-cover rounded-md flex-shrink-0"
+          />
+        )}
+        <span className="text-sm text-gray-800 truncate">{product.title}</span>
+      </a>
+    ))}
+    
+    <a href={`/search?q=${encodeURIComponent(query)}`}
+      className="block px-4 py-2.5 text-sm text-[#2092bb] font-medium hover:bg-blue-50 border-t border-gray-100 transition"
+      onClick={() => setOpen(false)}
+    >
+      See all results for "{query}" →
+    </a>
+  </div>
+)}
         </form>
 
         {/* Hero text */}

@@ -14,7 +14,7 @@ import type {
 } from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: `Hydrogen | Search`}];
+  return [{title: `Search | Valley Feeds`}];
 };
 
 export async function loader({request, context}: Route.LoaderArgs) {
@@ -33,45 +33,96 @@ export async function loader({request, context}: Route.LoaderArgs) {
   return await searchPromise;
 }
 
-/**
- * Renders the /search route
- */
 export default function SearchPage() {
   const {type, term, result, error} = useLoaderData<typeof loader>();
   if (type === 'predictive') return null;
 
+  const hasResults = !!(term && result?.total);
+
   return (
-    <div className="search">
-      <h1>Search</h1>
-      <SearchForm>
-        {({inputRef}) => (
-          <>
-            <input
-              defaultValue={term}
-              name="q"
-              placeholder="Search…"
-              ref={inputRef}
-              type="search"
-            />
-            &nbsp;
-            <button type="submit">Search</button>
-          </>
-        )}
-      </SearchForm>
-      {error && <p style={{color: 'red'}}>{error}</p>}
-      {!term || !result?.total ? (
-        <SearchResults.Empty />
-      ) : (
-        <SearchResults result={result} term={term}>
-          {({articles, pages, products, term}) => (
-            <div>
-              <SearchResults.Products products={products} term={term} />
-              <SearchResults.Pages pages={pages} term={term} />
-              <SearchResults.Articles articles={articles} term={term} />
-            </div>
+    <div className="min-h-screen bg-stone-50">
+      {/* Page header */}
+      <div className="bg-white border-b border-stone-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+          <h1 className="text-2xl md:text-3xl font-bold text-stone-900 mb-1">
+            {term ? (
+              <>
+                Results for{' '}
+                <span className="text-[#2092bb]">&ldquo;{term}&rdquo;</span>
+              </>
+            ) : (
+              'Search'
+            )}
+          </h1>
+          {hasResults && (
+            <p className="text-stone-500 text-sm mt-1">
+              {result.total} result{result.total !== 1 ? 's' : ''} found
+            </p>
           )}
-        </SearchResults>
-      )}
+
+          {/* Search form */}
+          <div className="mt-5 max-w-xl">
+            <SearchForm>
+              {({inputRef}) => (
+                <div className="flex rounded-full overflow-hidden shadow-sm border border-stone-300 bg-white focus-within:border-[#2092bb] focus-within:ring-2 focus-within:ring-[#2092bb]/20 transition">
+                  <input
+                    defaultValue={term}
+                    name="q"
+                    placeholder="Search products, feed, supplies…"
+                    ref={inputRef}
+                    type="search"
+                    className="flex-1 px-5 py-3 text-sm text-stone-900 bg-transparent focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    aria-label="Search"
+                    className="flex items-center justify-center px-5 bg-[#2092bb] hover:bg-[#1a7aa0] transition flex-shrink-0"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </SearchForm>
+          </div>
+        </div>
+      </div>
+
+      {/* Results body */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {error && (
+          <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        {!hasResults ? (
+          <SearchResults.Empty />
+        ) : (
+          <SearchResults result={result} term={term}>
+            {({articles, pages, products, term}) => (
+              <div>
+                <SearchResults.Products products={products} term={term} />
+                <SearchResults.Pages pages={pages} term={term} />
+                <SearchResults.Articles articles={articles} term={term} />
+              </div>
+            )}
+          </SearchResults>
+        )}
+      </div>
+
       <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
     </div>
   );
@@ -110,6 +161,8 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
         amount
         currencyCode
       }
+      weight
+      weightUnit
       selectedOptions {
         name
         value
@@ -151,7 +204,6 @@ const PAGE_INFO_FRAGMENT = `#graphql
   }
 ` as const;
 
-// NOTE: https://shopify.dev/docs/api/storefront/latest/queries/search
 export const SEARCH_QUERY = `#graphql
   query RegularSearch(
     $country: CountryCode
@@ -210,22 +262,15 @@ export const SEARCH_QUERY = `#graphql
   ${PAGE_INFO_FRAGMENT}
 ` as const;
 
-/**
- * Regular search fetcher
- */
 async function regularSearch({
   request,
   context,
-}: Pick<
-  Route.LoaderArgs,
-  'request' | 'context'
->): Promise<RegularSearchReturn> {
+}: Pick<Route.LoaderArgs, 'request' | 'context'>): Promise<RegularSearchReturn> {
   const {storefront} = context;
   const url = new URL(request.url);
   const variables = getPaginationVariables(request, {pageBy: 8});
   const term = String(url.searchParams.get('q') || '');
 
-  // Search articles, pages, and products for the `q` term
   const {
     errors,
     ...items
@@ -250,10 +295,6 @@ async function regularSearch({
   return {type: 'regular', term, error, result: {total, items}};
 }
 
-/**
- * Predictive search query and fragments
- * (adjust as needed)
- */
 const PREDICTIVE_SEARCH_ARTICLE_FRAGMENT = `#graphql
   fragment PredictiveArticle on Article {
     __typename
@@ -335,7 +376,6 @@ const PREDICTIVE_SEARCH_QUERY_FRAGMENT = `#graphql
   }
 ` as const;
 
-// NOTE: https://shopify.dev/docs/api/storefront/latest/queries/predictiveSearch
 const PREDICTIVE_SEARCH_QUERY = `#graphql
   query PredictiveSearch(
     $country: CountryCode
@@ -375,16 +415,10 @@ const PREDICTIVE_SEARCH_QUERY = `#graphql
   ${PREDICTIVE_SEARCH_QUERY_FRAGMENT}
 ` as const;
 
-/**
- * Predictive search fetcher
- */
 async function predictiveSearch({
   request,
   context,
-}: Pick<
-  Route.ActionArgs,
-  'request' | 'context'
->): Promise<PredictiveSearchReturn> {
+}: Pick<Route.ActionArgs, 'request' | 'context'>): Promise<PredictiveSearchReturn> {
   const {storefront} = context;
   const url = new URL(request.url);
   const term = String(url.searchParams.get('q') || '').trim();
@@ -393,14 +427,12 @@ async function predictiveSearch({
 
   if (!term) return {type, term, result: getEmptyPredictiveSearchResult()};
 
-  // Predictively search articles, collections, pages, products, and queries (suggestions)
   const {
     predictiveSearch: items,
     errors,
   }: PredictiveSearchQuery & {errors?: Array<{message: string}>} =
     await storefront.query(PREDICTIVE_SEARCH_QUERY, {
       variables: {
-        // customize search options as needed
         limit,
         limitScope: 'EACH',
         term,
