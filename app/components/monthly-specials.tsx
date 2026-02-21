@@ -269,19 +269,20 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
                     className="relative ml-auto"
                     onMouseEnter={() => setShowTooltip(true)}
                     onMouseLeave={() => setShowTooltip(false)}
+                    onClick={() => setShowTooltip(!showTooltip)} // Add click for mobile
                   >
                     <span className="text-amber-600 cursor-help text-lg">⚠️</span>
                     
                     {showTooltip && (
-                      <div className="absolute bottom-full right-0 mb-2 w-64 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[90vw] max-w-xs bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
                         <div className="text-xs text-amber-800">
                           <strong className="block mb-1">Heavy Item Shipping Notice</strong>
-                          <p>This item exceeds Australia Post's 22kg limit, or restricted via Australia Post rules.</p> 
-                          <p>Local delivery is available within 100km of Katandra West.</p>
+                          <p className="mb-1">This item exceeds Australia Post's 22kg limit, or is restricted for Australia Postage.</p> 
+                          <p className="mb-1">Local delivery available within 100km of Katandra West.</p>
                           <p>Outside of this range will require you to arrange a courier.</p>
                         </div>
                         {/* Arrow pointing down */}
-                        <div className="absolute top-full right-4 -mt-1">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
                           <div className="border-8 border-transparent border-t-amber-200"></div>
                         </div>
                       </div>
