@@ -217,94 +217,106 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
     }
   };
 
-  return (
-    <div className="flex-shrink-0 w-1/2 md:w-1/3 lg:w-1/6 px-3">
-      <div className="border rounded-lg overflow-hidden h-full bg-white shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex flex-col h-full">
-          {/* Image Link */}
+return (
+  <div className="flex-shrink-0 w-1/2 md:w-1/3 lg:w-1/6 px-3">
+    <div className="border rounded-lg overflow-visible h-full bg-white shadow-sm hover:shadow-md transition-shadow relative">
+      <div className="flex flex-col h-full">
+        {/* Image Link */}
+        <Link to={`/products/${product.handle}`}>
+          {image ? (
+            <Image
+              data={image}
+              aspectRatio="1/1"
+              sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"
+              className="w-full object-cover rounded-t-lg"
+              loading="eager"
+            />
+          ) : (
+            <div className="w-full aspect-square bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
+              No Image
+            </div>
+          )}
+        </Link>
+
+        <div className="flex flex-col p-3 h-full">
+          {/* Title Link */}
           <Link to={`/products/${product.handle}`}>
-            {image ? (
-              <Image
-                data={image}
-                aspectRatio="1/1"
-                sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"
-                className="w-full object-cover"
-                loading="eager"
-              />
-            ) : (
-              <div className="w-full aspect-square bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
-                No Image
-              </div>
-            )}
+            <h3 className="text-sm font-semibold line-clamp-2 mb-2 hover:text-emerald-700">
+              {product.title}
+            </h3>
           </Link>
 
-          <div className="flex flex-col p-3 h-full">
-            {/* Title Link */}
-            <Link to={`/products/${product.handle}`}>
-              <h3 className="text-sm font-semibold line-clamp-2 mb-2 hover:text-emerald-700">
-                {product.title}
-              </h3>
-            </Link>
-
-            <div className="mt-auto">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-emerald-700 font-bold text-base">
+          <div className="mt-auto">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-emerald-700 font-bold text-base">
+                {new Intl.NumberFormat('en-AU', {
+                  style: 'currency',
+                  currency: 'AUD',
+                }).format(price)}
+              </span>
+              {compareAt && compareAt > price && (
+                <span className="text-sm text-gray-400 line-through">
                   {new Intl.NumberFormat('en-AU', {
                     style: 'currency',
                     currency: 'AUD',
-                  }).format(price)}
+                  }).format(compareAt)}
                 </span>
-                {compareAt && compareAt > price && (
-                  <span className="text-sm text-gray-400 line-through">
-                    {new Intl.NumberFormat('en-AU', {
-                      style: 'currency',
-                      currency: 'AUD',
-                    }).format(compareAt)}
-                  </span>
-                )}
-                
-                {/* Weight Warning Icon with Tooltip */}
+              )}
+              
+              {/* Weight Warning Icon with Tooltip */}
                 {isOverWeightLimit && (
                   <div 
-                    className="relative ml-auto"
+                    className="relative ml-auto group"
                     onMouseEnter={() => setShowTooltip(true)}
                     onMouseLeave={() => setShowTooltip(false)}
-                    onClick={() => setShowTooltip(!showTooltip)} // Add click for mobile
+                    onClick={() => setShowTooltip(!showTooltip)}
                   >
                     <span className="text-amber-600 cursor-help text-lg">⚠️</span>
                     
                     {showTooltip && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[90vw] max-w-xs bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
-                        <div className="text-xs text-amber-800">
-                          <strong className="block mb-1">Heavy Item Shipping Notice</strong>
-                          <p className="mb-1">This item exceeds Australia Post's 22kg limit, or is restricted for Australia Postage.</p> 
-                          <p className="mb-1">Local delivery available within 100km of Katandra West.</p>
-                          <p>Outside of this range will require you to arrange a courier.</p>
+                      <>
+                        {/* Desktop tooltip - right aligned */}
+                        <div className="hidden md:block absolute bottom-full right-0 mb-2 w-48 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
+                          <div className="text-xs text-amber-800">
+                            <strong className="block mb-1">Heavy Item</strong>
+                            <p className="mb-1">Exceeds 22kg Australia Post limit.</p> 
+                            <p className="mb-1">Local delivery within 100km of Katandra West available.</p>
+                            <p>Otherwise arrange courier.</p>
+                          </div>
+                          <div className="absolute top-full right-4 -mt-1">
+                            <div className="border-8 border-transparent border-t-amber-200"></div>
+                          </div>
                         </div>
-                        {/* Arrow pointing down */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
-                          <div className="border-8 border-transparent border-t-amber-200"></div>
+                        
+                        {/* Mobile tooltip - centered above card */}
+                        <div className="md:hidden fixed left-1/2 -translate-x-1/2 bottom-20 w-[85vw] max-w-sm bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
+                          <div className="text-xs text-amber-800">
+                            <strong className="block mb-1">Heavy Item</strong>
+                            <p className="mb-1">Exceeds 22kg Australia Post limit.</p> 
+                            <p className="mb-1">Local delivery within 100km of Katandra West available.</p>
+                            <p>Otherwise arrange courier.</p>
+                          </div>
                         </div>
-                      </div>
+                      </>
                     )}
                   </div>
                 )}
-              </div>
-
-              <form onSubmit={handleAddToCart}>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="w-full"
-                  disabled={isAdding}
-                >
-                  {isAdding ? 'Adding...' : 'Add to Cart'}
-                </Button>
-              </form>
             </div>
+
+            <form onSubmit={handleAddToCart}>
+              <Button
+                type="submit"
+                size="sm"
+                className="w-full"
+                disabled={isAdding}
+              >
+                {isAdding ? 'Adding...' : 'Add to Cart'}
+              </Button>
+            </form>
           </div>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
