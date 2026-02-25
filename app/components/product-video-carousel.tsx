@@ -59,18 +59,14 @@ function getYoutubeThumbnail(youtubeId: string): string {
 }
 
 function normaliseProducts(products: ShopifyProductNode[]): VideoItem[] {
-  console.log('normaliseProducts received:', products?.length, 'products')
+  
   const items: VideoItem[] = [];
   
   for (const product of products) {
-    console.log('Processing:', product.title)
-    const productUrl =
-      product.onlineStoreUrl ?? `/products/${product.handle}`;
+    const productUrl = `/products/${product.handle}`
 
     for (const media of product.media?.nodes ?? []) {
-      console.log('  media type:', media.mediaContentType)
       if (media.mediaContentType === 'EXTERNAL_VIDEO') {
-        console.log('  → VIDEO found, sources:', media.sources?.length)
         const youtubeId = extractYoutubeId(media.embedUrl ?? '');
         if (!youtubeId) continue;
         items.push({
