@@ -11,6 +11,7 @@ import {
 } from '@shopify/hydrogen';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductForm} from '~/components/ProductForm';
+import {ProductVideo} from '~/components/ProductVideo'
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}: Route.MetaArgs) => {
@@ -117,6 +118,9 @@ export default function Product() {
               </div>
             )}
           </div>
+
+          {/* Video below image — only renders if product has one */}
+          {product.media && <ProductVideo media={product.media} />}
         </div>
 
         {/* Product Info */}
@@ -141,7 +145,7 @@ export default function Product() {
             />
           </div>
 
-          {/* Heavy Item Warning - ADD THIS */}
+          {/* Heavy Item Warning */}
           {isOverWeightLimit && (
             <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
               <div className="flex items-start gap-3">
@@ -265,6 +269,19 @@ const PRODUCT_FRAGMENT = `#graphql
     description
     encodedVariantExistence
     encodedVariantAvailability
+    media(first: 10) {
+      nodes {
+        mediaContentType
+        ... on ExternalVideo {
+          embedUrl
+          previewImage { url }
+        }
+        ... on Video {
+          sources { url mimeType }
+          previewImage { url }
+        }
+      }
+    }
     options {
       name
       optionValues {
