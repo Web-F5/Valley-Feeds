@@ -82,33 +82,26 @@ export function KatandraWestPostOffice() {
             <div className="flex mt-4 pt-4 border-t justify-center border-gray-200">
               <dl className="grid grid-cols-2 gap-x-12 gap-y-2 max-w-xl mx-auto">
                 
-                  <dt className="text-gray-700 font-medium text-right">Friday</dt>
-                  <dd className="text-gray-600">7:30am - 7:30pm</dd>
-                
-                
-                  <dt className="text-gray-700 font-medium text-right">Saturday</dt>
-                  <dd className="text-gray-600">7:30am - 8:00pm</dd>
-                
-                
                   <dt className="text-gray-700 font-medium text-right">Sunday</dt>
-                  <dd className="text-gray-600">8:30am - 7:00pm</dd>
-                
+                  <dd className="text-gray-600">8:00am - 7:30pm</dd>
                 
                   <dt className="text-gray-700 font-medium text-right">Monday</dt>
                   <dd className="text-gray-600">7:30am - 7:30pm</dd>
                 
-                
                   <dt className="text-gray-700 font-medium text-right">Tuesday</dt>
                   <dd className="text-gray-600">7:30am - 7:30pm</dd>
-                
                 
                   <dt className="text-gray-700 font-medium text-right">Wednesday</dt>
                   <dd className="text-gray-600">7:30am - 7:30pm</dd>
                 
-                
                   <dt className="text-gray-700 font-medium text-right">Thursday</dt>
+                  <dd className="text-gray-600">7:30am - 5:30pm</dd>
+
+                  <dt className="text-gray-700 font-medium text-right">Friday</dt>
                   <dd className="text-gray-600">7:30am - 7:30pm</dd>
                 
+                  <dt className="text-gray-700 font-medium text-right">Saturday</dt>
+                  <dd className="text-gray-600">8:00am - 7:30pm</dd>
               </dl>
             </div>
           </div>
