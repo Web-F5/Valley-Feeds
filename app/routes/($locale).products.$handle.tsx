@@ -97,8 +97,6 @@ export default function Product() {
   
   const isOverWeightLimit = weightInKg > WEIGHT_LIMIT_KG;
 
-  console.log('Product Page:', title, 'Weight:', variantWeight, weightUnit, 'KG:', weightInKg);
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">

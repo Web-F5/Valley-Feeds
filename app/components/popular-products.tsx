@@ -95,7 +95,7 @@ export function PopularProducts({products}: {products: any[]}) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {products.map((product) => {
               const variant = product.variants?.nodes?.[0];
-              console.log('Variant data:', variant);
+  
               if (!variant?.id || !product.priceRange) return null;
               const price = Number(product.priceRange.minVariantPrice.amount);
               const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
@@ -206,9 +206,6 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
   }
   
   const isOverWeightLimit = weightInKg > 22;
-
-  // Debug
-  console.log('Popular Product:', product.title, 'Weight:', variantWeight, weightUnit, 'KG:', weightInKg);
 
   const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();

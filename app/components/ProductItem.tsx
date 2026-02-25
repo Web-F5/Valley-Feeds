@@ -37,12 +37,6 @@ export function ProductItem({
   
   const isOverWeightLimit = weightInKg > WEIGHT_LIMIT_KG;
 
-  // Remove debug logs once confirmed working
-  console.log('Product:', product.title);
-  console.log('Raw weight:', variantWeight, weightUnit);
-  console.log('Weight in KG:', weightInKg);
-  console.log('Over limit?:', isOverWeightLimit);
-
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();

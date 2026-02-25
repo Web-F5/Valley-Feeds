@@ -182,9 +182,6 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
   
   const isOverWeightLimit = weightInKg > 22;
 
-  // Debug
-  console.log('Popular Product:', product.title, 'Weight:', variantWeight, weightUnit, 'KG:', weightInKg);
-
   const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAdding(true);

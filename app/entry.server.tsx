@@ -45,9 +45,6 @@ export default async function handleRequest(
 
 responseHeaders.set('Content-Type', 'text/html');
 
-// Debug: log the original header
-console.log('Original CSP header:', header);
-
 // Parse and modify the CSP header
 let updatedHeader = header;
 
@@ -72,7 +69,6 @@ if (updatedHeader.includes('img-src')) {
 }
 
 
-console.log('Updated CSP header:', updatedHeader);
 // Delete any existing CSP header first, then set the new one
 responseHeaders.delete('Content-Security-Policy');
 responseHeaders.set('Content-Security-Policy', updatedHeader);

@@ -15,24 +15,15 @@ export async function action({request, context}: Route.ActionArgs) {
 
   const formData = await request.formData();
 
-  console.log('=== CART ACTION DEBUG ===');
-  console.log('FormData entries:');
-  for (const [key, value] of formData.entries()) {
-    console.log(`  ${key}:`, value);
-  }
 
   // Check if this is a plain form submission
   const cartAction = formData.get('cartAction');
   
   if (cartAction === 'ADD_TO_CART') {
     // Handle plain form submission
-    console.log('✅ Plain form submission detected');
     
     const merchandiseId = formData.get('lines[0][merchandiseId]') as string;
     const quantity = parseInt(formData.get('lines[0][quantity]') as string, 10);
-    
-    console.log('Merchandise ID:', merchandiseId);
-    console.log('Quantity:', quantity);
     
     const result = await cart.addLines([{
       merchandiseId,
@@ -49,9 +40,6 @@ export async function action({request, context}: Route.ActionArgs) {
       status = 303;
       headers.set('Location', redirectTo);
     }
-
-    console.log('✅ Cart action complete');
-    console.log('=== END DEBUG ===');
 
     return data(
       {
@@ -74,14 +62,10 @@ export async function action({request, context}: Route.ActionArgs) {
     const parsed = CartForm.getFormInput(formData);
     action = parsed.action;
     inputs = parsed.inputs;
-    console.log('✅ CartForm parsed action:', action);
-    console.log('✅ CartForm parsed inputs:', JSON.stringify(inputs, null, 2));
   } catch (error) {
     console.error('❌ Error parsing CartForm input:', error);
     throw error;
   }
-
-  console.log('=== END DEBUG ===');
 
   if (!action) {
     throw new Error('No action provided');

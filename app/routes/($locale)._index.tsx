@@ -11,6 +11,7 @@ import {SiteFooter} from '~/components/site-footer';
 import {Reviews} from '~/components/reviews';
 import {getPopularProducts} from '~/lib/shopify/pop-products-query';
 import {getMonthlySpecials} from '~/lib/shopify/queries';
+import {getProductVideos} from '~/lib/shopify/product-videos-query'
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -23,18 +24,20 @@ export async function loader(args: Route.LoaderArgs) {
   const {storefront} = args.context;
 
   try {
-    const [popularProducts, monthlySpecials] = await Promise.all([
+    const [popularProducts, monthlySpecials, productVideos] = await Promise.all([
       getPopularProducts(storefront),
       getMonthlySpecials(storefront),
+      getProductVideos(storefront),
     ]);
 
-    return {popularProducts, monthlySpecials};
+    console.log('Loader returning productVideos length:', productVideos?.length)
+
+    return {popularProducts, monthlySpecials, productVideos};
   } catch (error) {
     console.error('Loader error:', error);
-    return {popularProducts: [], monthlySpecials: []};
+    return {popularProducts: [], monthlySpecials: [], productVideos: []};
   }
 }
-
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
 
@@ -47,7 +50,7 @@ export default function Homepage() {
         <PopularProducts products={data.popularProducts} />
         <CategoryTiles />
         <MonthlySpecials products={data.monthlySpecials} />
-        <ProductVideoCarousel />
+        <ProductVideoCarousel products={data.productVideos ?? []} />
         <Reviews />
       </main>
       <SiteFooter />
