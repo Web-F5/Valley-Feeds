@@ -70,10 +70,10 @@ export function HeroSection() {
         <img
           src="./images/vfg-logo-v2-cmyk-blue.webp"
           alt="Valley Feeds"
-          className="w-48 md:w-64"
+          className="w-64 md:w-80"
         />
 
-        {/* Search */}
+        {/* Search 
         <form
           action="/search"
           method="get"
@@ -112,9 +112,9 @@ export function HeroSection() {
                 />
               </svg>
             </button>
-          </div>
+          </div>*/}
 
-          {/* Autocomplete results */}
+          {/* Autocomplete results 
 {open && results.length > 0 && (
   <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
     {results.map((product) => (
@@ -142,7 +142,7 @@ export function HeroSection() {
     </a>
   </div>
 )}
-        </form>
+        </form>*/}
 
         {/* Hero text */}
         <div className="max-w-2xl">
