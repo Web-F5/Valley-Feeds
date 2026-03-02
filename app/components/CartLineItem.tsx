@@ -6,6 +6,7 @@ import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {CartForm} from '@shopify/hydrogen';
+import {useState} from 'react';
 
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
@@ -22,6 +23,7 @@ export function CartLineItem({
   const {product, title, image, selectedOptions, weight, weightUnit} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Calculate weight
   let weightInKg = 0;
@@ -62,32 +64,50 @@ export function CartLineItem({
             }
           }}
         >
-          <p><strong>{product.title}</strong></p>
+          <p>
+            <strong>{product.title}</strong>
+            {/* Heavy Item Warning Icon */}
+            {isOverWeightLimit && (
+              <span 
+                className="relative inline-block ml-2"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                onClick={() => setShowTooltip(!showTooltip)}
+              >
+                <span className="text-amber-600 cursor-help text-base">⚠️</span>
+                
+                {showTooltip && (
+                  <>
+                    {/* Desktop tooltip */}
+                    <div className="hidden md:block absolute bottom-full left-0 mb-2 w-64 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
+                      <div className="text-xs text-amber-800">
+                         <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
+                        <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
+                        <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
+                        <p>Outside this range will require you to arrange a courier.</p>
+                      </div>
+                      <div className="absolute top-full left-4 -mt-1">
+                        <div className="border-8 border-transparent border-t-amber-200"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Mobile tooltip */}
+                    <div className="md:hidden fixed left-1/2 -translate-x-1/2 bottom-20 w-[85vw] max-w-sm bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
+                      <div className="text-xs text-amber-800">
+                        <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
+                        <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
+                        <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
+                        <p>Outside this range will require you to arrange a courier.</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </span>
+            )}
+          </p>
         </Link>
         <ProductPrice price={line?.cost?.totalAmount} />
         
-        {/* Heavy Item Warning */}
-        {isOverWeightLimit && (
-          <div style={{
-            backgroundColor: '#fff3cd',
-            border: '1px solid #ffc107',
-            borderRadius: '4px',
-            padding: '0.5rem',
-            marginTop: '0.5rem',
-            fontSize: '0.875rem'
-          }}>
-            <div style={{display: 'flex', alignItems: 'start', gap: '0.5rem'}}>
-              <span style={{fontSize: '1rem'}}>⚠️</span>
-              <div style={{color: '#856404'}}>
-                <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
-                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
-                <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
-                <p>Outside this range will require you to arrange a courier.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         <ul>
           {selectedOptions
             .filter((option) => option.value !== 'Default Title')
