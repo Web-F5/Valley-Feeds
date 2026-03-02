@@ -79,12 +79,10 @@ export function CartLineItem({
             <div style={{display: 'flex', alignItems: 'start', gap: '0.5rem'}}>
               <span style={{fontSize: '1rem'}}>⚠️</span>
               <div style={{color: '#856404'}}>
-                <strong>Heavy Item Shipping Notice</strong>
-                <p style={{margin: '0.25rem 0 0 0', fontSize: '0.75rem'}}>
-                  <p>This item exceeds Australia Post's 22kg limit, or restricted via Australia Post rules.</p> 
-                  <p>Local delivery is available within 100km of Katandra West.</p>
-                  <p>Outside of this range will require you to arrange a courier.</p>
-                </p>
+                <strong className="block mb-1">Heavy Item Shipping Notice</strong>
+                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
+                <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
+                <p>Outside this range will require you to arrange a courier.</p>
               </div>
             </div>
           </div>
