@@ -74,7 +74,7 @@ export async function getMonthlySpecials(storefront: any) {
 
   const response = await storefront.query(query, {
     variables: { handle: 'monthly-specials' },
-    cache: storefront.CacheLong(),
+    cache: storefront.CacheShort(),
   });
 
   return flattenConnection(response?.collection?.products || { edges: [] });

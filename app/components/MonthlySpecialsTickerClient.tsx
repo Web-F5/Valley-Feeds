@@ -15,6 +15,7 @@ export default function MonthlySpecialsTickerClient({ products }: any) {
     const total = products.length
     
     const product = products[index]
+   
     
     if (!product) {
         
@@ -76,14 +77,16 @@ export default function MonthlySpecialsTickerClient({ products }: any) {
     }
 
     const price = Number(product.priceRange?.minVariantPrice?.amount || 0)
+    
     const compareAt = Number(
-        product.variants?.nodes?.[0]?.compareAtPrice?.amount || 0
+        product.compareAtPriceRange?.minVariantPrice?.amount || 
+        product.variants?.edges?.[0]?.node?.compareAtPrice?.amount || 0
     )
 
     const discount =
         compareAt && compareAt > price
             ? Math.round(((compareAt - price) / compareAt) * 100)
-            : null  
+            : null
 
     // Auto-advance ticker
     useEffect(() => {
@@ -92,7 +95,6 @@ export default function MonthlySpecialsTickerClient({ products }: any) {
             
             return
         }
-        
         
         const interval = setInterval(() => {
             

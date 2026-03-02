@@ -113,9 +113,12 @@ export function MonthlySpecials({products}: {products: any[]}) {
             if (!variant?.id || !product.priceRange) return null;
 
             const price = Number(product.priceRange.minVariantPrice.amount);
-            const compareAt = variant.compareAtPrice
-              ? Number(variant.compareAtPrice.amount)
-              : null;
+                       
+            const compareAt = Number(
+              product.compareAtPriceRange?.minVariantPrice?.amount || 
+              variant.compareAtPrice?.amount || 
+              0
+            );
 
             const image = product.images?.nodes?.[0];
 
