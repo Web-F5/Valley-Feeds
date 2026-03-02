@@ -112,7 +112,7 @@ function SearchForm({onClose}: {onClose?: () => void}) {
 
         {/* Autocomplete results */}
         {open && results.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-[200]">
             {results.map((product) => (
               <a
                 key={product.id}
@@ -181,8 +181,8 @@ export function Header({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#24282E] text-white shadow-lg">
-      <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-6">
+    <header className="sticky top-0 z-50 w-full bg-[#24282E] text-white shadow-lg overflow-visible">
+      <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-6 overflow-visible">
         <div className="flex items-center justify-between h-16 gap-4">
 
           {/* Logo */}
@@ -389,8 +389,10 @@ export function Header({
 
         {/* ── Mobile Search Bar (drops below header row) ── */}
         {mobileSearchOpen && !isStorePage && (
-          <div className="lg:hidden px-2 pb-3 pt-1">
-            <SearchForm onClose={() => setMobileSearchOpen(false)} />
+          <div className="lg:hidden px-2 pb-3 pt-1 flex justify-center">
+            <div className="w-full max-w-sm">
+              <SearchForm onClose={() => setMobileSearchOpen(false)} />
+            </div>
           </div>
         )}
 
