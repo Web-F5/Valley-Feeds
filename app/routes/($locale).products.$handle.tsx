@@ -152,7 +152,7 @@ export default function Product() {
                 <span className="text-amber-600 text-2xl flex-shrink-0">⚠️</span>
                 <div className="text-sm text-amber-800">
                   <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
-                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
+                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West only.</strong></p>
                 <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
                 <p>Outside this range will require you to arrange a courier.</p>
                 </div>

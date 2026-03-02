@@ -175,7 +175,7 @@ function SearchProductCard({product, term}: {product: any; term: string}) {
                   <div className="hidden md:block absolute bottom-full right-0 mb-2 w-48 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
                     <div className="text-xs text-amber-800">
                       <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
-                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
+                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West only.</strong></p>
                 <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
                 <p>Outside this range will require you to arrange a courier.</p>
                     </div>
@@ -185,7 +185,7 @@ function SearchProductCard({product, term}: {product: any; term: string}) {
                   <div className="md:hidden fixed left-1/2 -translate-x-1/2 bottom-20 w-[85vw] max-w-sm bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
                     <div className="text-xs text-amber-800">
                       <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
-                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
+                <p><strong className="block mb-1">Local delivery available within 100km of Katandra West only.</strong></p>
                 <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
                 <p>Outside this range will require you to arrange a courier.</p>
                     </div>

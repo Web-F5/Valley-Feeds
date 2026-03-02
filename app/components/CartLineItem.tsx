@@ -42,7 +42,7 @@ export function CartLineItem({
   const isOverWeightLimit = weightInKg > WEIGHT_LIMIT_KG;
 
   return (
-    <li key={id} className="cart-line">
+    <li key={id} className="cart-line" style={{position: 'relative', overflow: 'visible'}}>
       {image && (
         <Image
           alt={title}
@@ -55,57 +55,66 @@ export function CartLineItem({
       )}
 
       <div>
-        <Link
-          prefetch="intent"
-          to={lineItemUrl}
-          onClick={() => {
-            if (layout === 'aside') {
-              close();
-            }
-          }}
-        >
-          <p>
-            <strong>{product.title}</strong>
-            {/* Heavy Item Warning Icon */}
-            {isOverWeightLimit && (
-              <span 
-                className="relative inline-block ml-2"
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-                onClick={() => setShowTooltip(!showTooltip)}
-              >
-                <span className="text-amber-600 cursor-help text-base">⚠️</span>
-                
-                {showTooltip && (
-                  <>
-                    {/* Desktop tooltip */}
-                    <div className="hidden md:block absolute bottom-full left-0 mb-2 w-64 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
-                      <div className="text-xs text-amber-800">
-                         <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
-                        <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
-                        <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
-                        <p>Outside this range will require you to arrange a courier.</p>
-                      </div>
-                      <div className="absolute top-full left-4 -mt-1">
-                        <div className="border-8 border-transparent border-t-amber-200"></div>
-                      </div>
+        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+          <Link
+            prefetch="intent"
+            to={lineItemUrl}
+            onClick={() => {
+              if (layout === 'aside') {
+                close();
+              }
+            }}
+          >
+            <p><strong>{product.title}</strong></p>
+          </Link>
+          
+          {/* Heavy Item Warning Icon - Outside link */}
+          {isOverWeightLimit && (
+            <span 
+              className="relative inline-block flex-shrink-0"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTooltip(!showTooltip);
+              }}
+              style={{cursor: 'pointer'}}
+            >
+              <span className="text-amber-600 text-base">⚠️</span>
+              
+              {showTooltip && (
+                <>
+                  {/* Desktop tooltip - positioned with fixed to avoid overflow */}
+                  <div className="hidden md:block fixed w-64 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-[9999]"
+                    style={{
+                      left: '50%',
+                      top: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  >
+                    <div className="text-xs text-amber-800">
+                      <strong className="block mb-1 underline">Shipping Notice</strong>
+                      <p className="mb-1">Exceeds 22kg Australia Post limit.</p> 
+                      <p className="mb-1">Local delivery within 100km of Katandra West available.</p>
+                      <p>Otherwise arrange courier.</p>
                     </div>
-                    
-                    {/* Mobile tooltip */}
-                    <div className="md:hidden fixed left-1/2 -translate-x-1/2 bottom-20 w-[85vw] max-w-sm bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-50">
-                      <div className="text-xs text-amber-800">
-                        <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
-                        <p><strong className="block mb-1">Local delivery available within 100km of Katandra West.</strong></p>
-                        <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
-                        <p>Outside this range will require you to arrange a courier.</p>
-                      </div>
+                  </div>
+                  
+                  {/* Mobile tooltip */}
+                  <div className="md:hidden fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[85vw] max-w-sm bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-[9999]">
+                    <div className="text-xs text-amber-800">
+                      <strong className="block mb-1 underline">Shipping Notice</strong>
+                      <p className="mb-1">Exceeds 22kg Australia Post limit.</p> 
+                      <p className="mb-1">Local delivery within 100km of Katandra West available.</p>
+                      <p>Otherwise arrange courier.</p>
                     </div>
-                  </>
-                )}
-              </span>
-            )}
-          </p>
-        </Link>
+                  </div>
+                </>
+              )}
+            </span>
+          )}
+        </div>
+        
         <ProductPrice price={line?.cost?.totalAmount} />
         
         <ul>
