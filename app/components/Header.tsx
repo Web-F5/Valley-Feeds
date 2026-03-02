@@ -1,5 +1,5 @@
 import {Suspense, useState, useEffect, useRef} from 'react';
-import {Await, NavLink, useAsyncValue, Link, useLocation} from 'react-router';
+import {Await, NavLink, useAsyncValue, Link, useLocation, useNavigate} from 'react-router';
 import {
   type CartViewPayload,
   useAnalytics,
@@ -50,6 +50,7 @@ function SearchForm({onClose}: {onClose?: () => void}) {
   const [open, setOpen] = useState(false);
   const results = usePredictiveSearch(query);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -67,16 +68,24 @@ function SearchForm({onClose}: {onClose?: () => void}) {
     else setOpen(false);
   }, [results, query]);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setOpen(false);
+    onClose?.();
+    navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
+    }
+  };
+
   return (
     <div ref={wrapperRef} className="relative w-full">
-      <form
-        action="/search"
-        method="get"
-        onSubmit={() => {
-          setOpen(false);
-          onClose?.();
-        }}
-      >
+      <form onSubmit={handleSubmit} action="/search" method="get">
         <div className="flex rounded-full overflow-hidden shadow-lg bg-white">
           <input
             type="search"
@@ -84,12 +93,14 @@ function SearchForm({onClose}: {onClose?: () => void}) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.length > 1 && setOpen(true)}
+            onKeyDown={handleKeyDown}
             placeholder="   Search products, feed, supplies..."
             className="w-full px-5 py-2.5 text-sm text-gray-900 focus:outline-none"
             autoComplete="off"
           />
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit as unknown as React.MouseEventHandler}
             aria-label="Search"
             className="flex items-center justify-center px-4 bg-[#2092bb] hover:bg-[#1a7aa0] transition flex-shrink-0"
           >
