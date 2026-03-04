@@ -105,3 +105,8 @@ html {
 .animate-slide-right {
   animation: slide-right 0.3s ease-out;
 }
+
+.cart-summary {
+  margin-bottom: 2rem; /* ~15mm ≈ 2rem */
+  padding-bottom: 1rem;
+}

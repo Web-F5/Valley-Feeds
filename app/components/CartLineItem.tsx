@@ -1,7 +1,7 @@
 import type {CartLayout} from '~/components/CartMain';
 import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link} from 'react-router';
+import {Link, useFetcher} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
@@ -68,7 +68,6 @@ export function CartLineItem({
             <p><strong>{product.title}</strong></p>
           </Link>
           
-          {/* Heavy Item Warning Icon - Outside link */}
           {isOverWeightLimit && (
             <span 
               className="relative inline-block flex-shrink-0"
@@ -84,7 +83,6 @@ export function CartLineItem({
               
               {showTooltip && (
                 <>
-                  {/* Desktop tooltip - positioned with fixed to avoid overflow */}
                   <div className="hidden md:block fixed w-64 bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-[9999]"
                     style={{
                       left: '50%',
@@ -93,20 +91,19 @@ export function CartLineItem({
                     }}
                   >
                     <div className="text-xs text-amber-800">
-                      <strong className="block mb-1 underline">Shipping Notice</strong>
-                      <p className="mb-1">Exceeds 22kg Australia Post limit.</p> 
-                      <p className="mb-1">Local delivery within 100km of Katandra West available.</p>
-                      <p>Otherwise arrange courier.</p>
+                      <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
+                      <p><strong className="block mb-1">Local delivery available within 100km of Katandra West only.</strong></p>
+                      <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
+                      <p>Outside this range will require you to arrange a courier.</p>
                     </div>
                   </div>
                   
-                  {/* Mobile tooltip */}
                   <div className="md:hidden fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[85vw] max-w-sm bg-amber-50 border border-amber-200 rounded-md p-3 shadow-lg z-[9999]">
                     <div className="text-xs text-amber-800">
-                      <strong className="block mb-1 underline">Shipping Notice</strong>
-                      <p className="mb-1">Exceeds 22kg Australia Post limit.</p> 
-                      <p className="mb-1">Local delivery within 100km of Katandra West available.</p>
-                      <p>Otherwise arrange courier.</p>
+                      <strong className="block mb-1 underline decoration-amber-600">Shipping Notice</strong>
+                      <p><strong className="block mb-1">Local delivery available within 100km of Katandra West only.</strong></p>
+                      <p>This item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
+                      <p>Outside this range will require you to arrange a courier.</p>
                     </div>
                   </div>
                 </>
@@ -127,9 +124,7 @@ export function CartLineItem({
             ))}
         </ul>
         
-        <div style={{display: 'flex', alignItems: 'center', marginTop: '0.5rem'}}>
-          <CartLineQuantity line={line} />
-        </div>
+        <CartLineQuantity line={line} />
       </div>
     </li>
   );
@@ -141,30 +136,38 @@ function CartLineQuantity({line}: {line: CartLine}) {
 
   return (
     <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
-      {/* 1. MINUS BUTTON - No onClick needed! */}
+      {/* MINUS BUTTON */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
         inputs={{
-          lines: [{id: lineId, quantity: quantity - 1}],
+          lines: [{id: lineId, quantity: Math.max(1, quantity - 1)}],
         }}
       >
         <button 
           disabled={quantity <= 1} 
-          className="qty-btn" 
           type="submit"
-          style={{width: '30px', height: '30px'}}
+          style={{
+            width: '30px', 
+            height: '30px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            cursor: quantity > 1 ? 'pointer' : 'not-allowed',
+            fontSize: '18px',
+            fontWeight: 'bold',
+          }}
         >
-          -
+          −
         </button>
       </CartForm>
 
-      {/* 2. QUANTITY DISPLAY */}
-      <span style={{fontWeight: 'bold', minWidth: '20px', textAlign: 'center'}}>
+      {/* QUANTITY DISPLAY */}
+      <span style={{fontWeight: 'bold', minWidth: '30px', textAlign: 'center'}}>
         {quantity}
       </span>
 
-      {/* 3. PLUS BUTTON - No onClick needed! */}
+      {/* PLUS BUTTON */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
@@ -173,15 +176,23 @@ function CartLineQuantity({line}: {line: CartLine}) {
         }}
       >
         <button 
-          className="qty-btn" 
           type="submit"
-          style={{width: '30px', height: '30px'}}
+          style={{
+            width: '30px', 
+            height: '30px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '18px',
+            fontWeight: 'bold',
+          }}
         >
           +
         </button>
       </CartForm>
 
-      {/* 4. REMOVE BUTTON - No onClick needed! */}
+      {/* REMOVE BUTTON */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesRemove}
@@ -190,7 +201,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
         <button 
           type="submit"
           style={{
-            padding: '0.25rem 0.75rem',
+            padding: '0.4rem 0.75rem',
             cursor: 'pointer',
             marginLeft: '0.5rem',
             backgroundColor: 'white',
