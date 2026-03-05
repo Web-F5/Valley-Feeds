@@ -1,12 +1,12 @@
 import type {CartLayout} from '~/components/CartMain';
 import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link} from 'react-router';
+import {Link, useFetcher} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {CartForm} from '@shopify/hydrogen';
-import {useState} from 'react';
+import {useState, useEffect, useRef} from 'react';
 
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
@@ -133,65 +133,103 @@ export function CartLineItem({
 function CartLineQuantity({line}: {line: CartLine}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity} = line;
+  const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const updateFetcher = useFetcher();
+
+  // Sync optimistic quantity when actual quantity changes from server
+  useEffect(() => {
+    if (updateFetcher.state === 'idle' && updateFetcher.data) {
+      setOptimisticQuantity(quantity);
+    }
+  }, [quantity, updateFetcher.state, updateFetcher.data]);
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    // Update UI immediately
+    setOptimisticQuantity(newQuantity);
+
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Debounce the actual update
+    timeoutRef.current = setTimeout(() => {
+      const formData = new FormData();
+      formData.append('cartFormInput', JSON.stringify({
+        action: 'LinesUpdate',
+        inputs: {
+          lines: [{id: lineId, quantity: newQuantity}]
+        }
+      }));
+      
+      updateFetcher.submit(formData, {
+        method: 'POST',
+        action: '/cart',
+      });
+    }, 800);
+  };
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const isPending = optimisticQuantity !== quantity;
 
   return (
     <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
       
       {/* MINUS BUTTON */}
-      <CartForm
-        route="/cart"
-        action={CartForm.ACTIONS.LinesUpdate}
-        inputs={{
-          lines: [{id: lineId, quantity: Math.max(1, quantity - 1)}],
+      <button 
+        disabled={optimisticQuantity <= 1} 
+        onClick={() => handleQuantityChange(optimisticQuantity - 1)}
+        style={{
+          width: '30px', 
+          height: '30px',
+          backgroundColor: 'white',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          cursor: optimisticQuantity > 1 ? 'pointer' : 'not-allowed',
+          fontSize: '18px',
+          fontWeight: 'bold',
         }}
       >
-        <button 
-          disabled={quantity <= 1} 
-          type="submit"
-          style={{
-            width: '30px', 
-            height: '30px',
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            cursor: quantity > 1 ? 'pointer' : 'not-allowed',
-            fontSize: '18px',
-            fontWeight: 'bold',
-          }}
-        >
-          −
-        </button>
-      </CartForm>
+        −
+      </button>
 
       {/* QUANTITY DISPLAY */}
-      <span style={{fontWeight: 'bold', minWidth: '30px', textAlign: 'center'}}>
-        {quantity}
+      <span style={{
+        fontWeight: 'bold', 
+        minWidth: '30px', 
+        textAlign: 'center',
+        color: isPending ? '#10b981' : 'inherit',
+      }}>
+        {optimisticQuantity}
       </span>
 
       {/* PLUS BUTTON */}
-      <CartForm
-        route="/cart"
-        action={CartForm.ACTIONS.LinesUpdate}
-        inputs={{
-          lines: [{id: lineId, quantity: quantity + 1}],
+      <button 
+        onClick={() => handleQuantityChange(optimisticQuantity + 1)}
+        style={{
+          width: '30px', 
+          height: '30px',
+          backgroundColor: 'white',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '18px',
+          fontWeight: 'bold',
         }}
       >
-        <button 
-          type="submit"
-          style={{
-            width: '30px', 
-            height: '30px',
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '18px',
-            fontWeight: 'bold',
-          }}
-        >
-          +
-        </button>
-      </CartForm>
+        +
+      </button>
 
       {/* REMOVE BUTTON */}
       <CartForm
