@@ -6,7 +6,7 @@ import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {CartForm} from '@shopify/hydrogen';
-import {useState, useRef, useEffect} from 'react';
+import {useState} from 'react';
 
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
@@ -133,106 +133,64 @@ export function CartLineItem({
 function CartLineQuantity({line}: {line: CartLine}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity} = line;
-  const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
-  const [pendingUpdate, setPendingUpdate] = useState<number | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Sync optimistic quantity when actual quantity changes
-  useEffect(() => {
-    setOptimisticQuantity(quantity);
-    setPendingUpdate(null);
-  }, [quantity]);
-
-  const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity < 1) return;
-
-    // Update UI immediately
-    setOptimisticQuantity(newQuantity);
-    setPendingUpdate(newQuantity);
-
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Debounce the actual form submission
-    timeoutRef.current = setTimeout(() => {
-      // Submit the form programmatically
-      const form = document.getElementById(`update-form-${lineId}`) as HTMLFormElement;
-      if (form) {
-        form.requestSubmit();
-      }
-    }, 800); // Wait 800ms after last click before submitting
-  };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
       
       {/* MINUS BUTTON */}
-      <button 
-        disabled={optimisticQuantity <= 1} 
-        onClick={() => handleQuantityChange(optimisticQuantity - 1)}
-        style={{
-          width: '30px', 
-          height: '30px',
-          backgroundColor: 'white',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          cursor: optimisticQuantity > 1 ? 'pointer' : 'not-allowed',
-          fontSize: '18px',
-          fontWeight: 'bold',
-        }}
-      >
-        −
-      </button>
-
-      {/* QUANTITY DISPLAY with pending indicator */}
-      <span style={{
-        fontWeight: 'bold', 
-        minWidth: '30px', 
-        textAlign: 'center',
-        color: pendingUpdate !== null ? '#10b981' : 'inherit',
-      }}>
-        {optimisticQuantity}
-      </span>
-
-      {/* PLUS BUTTON */}
-      <button 
-        onClick={() => handleQuantityChange(optimisticQuantity + 1)}
-        style={{
-          width: '30px', 
-          height: '30px',
-          backgroundColor: 'white',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '18px',
-          fontWeight: 'bold',
-        }}
-      >
-        +
-      </button>
-
-      {/* Hidden form that will be submitted after debounce */}
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
         inputs={{
-          lines: [{id: lineId, quantity: pendingUpdate || optimisticQuantity}],
+          lines: [{id: lineId, quantity: Math.max(1, quantity - 1)}],
         }}
       >
-        <form id={`update-form-${lineId}`} style={{display: 'none'}}>
-          <button type="submit" />
-        </form>
+        <button 
+          disabled={quantity <= 1} 
+          type="submit"
+          style={{
+            width: '30px', 
+            height: '30px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            cursor: quantity > 1 ? 'pointer' : 'not-allowed',
+            fontSize: '18px',
+            fontWeight: 'bold',
+          }}
+        >
+          −
+        </button>
+      </CartForm>
+
+      {/* QUANTITY DISPLAY */}
+      <span style={{fontWeight: 'bold', minWidth: '30px', textAlign: 'center'}}>
+        {quantity}
+      </span>
+
+      {/* PLUS BUTTON */}
+      <CartForm
+        route="/cart"
+        action={CartForm.ACTIONS.LinesUpdate}
+        inputs={{
+          lines: [{id: lineId, quantity: quantity + 1}],
+        }}
+      >
+        <button 
+          type="submit"
+          style={{
+            width: '30px', 
+            height: '30px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '18px',
+            fontWeight: 'bold',
+          }}
+        >
+          +
+        </button>
       </CartForm>
 
       {/* REMOVE BUTTON */}
