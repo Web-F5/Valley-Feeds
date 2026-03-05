@@ -1,7 +1,7 @@
 import type {CartLayout} from '~/components/CartMain';
 import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link, useNavigation} from 'react-router';
+import {Link} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
@@ -133,39 +133,10 @@ export function CartLineItem({
 function CartLineQuantity({line}: {line: CartLine}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity} = line;
-  const navigation = useNavigation();
-  
-  // Check if any form is submitting
-  const isUpdating = navigation.state === 'submitting' || navigation.state === 'loading';
 
   return (
-    <div className="cart-line-quantity" style={{position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
-      {/* Loading Overlay - More visible */}
-      {isUpdating && (
-        <div style={{
-          position: 'absolute',
-          top: '-5px',
-          left: '-5px',
-          right: '-5px',
-          bottom: '-5px',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
-          borderRadius: '4px',
-        }}>
-          <div style={{
-            border: '4px solid #f3f3f3',
-            borderTop: '4px solid #10b981',
-            borderRadius: '50%',
-            width: '30px',
-            height: '30px',
-            animation: 'spin 0.8s linear infinite',
-          }} />
-        </div>
-      )}
-
+    <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
+      
       {/* MINUS BUTTON */}
       <CartForm
         route="/cart"
@@ -175,7 +146,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
         }}
       >
         <button 
-          disabled={quantity <= 1 || isUpdating} 
+          disabled={quantity <= 1} 
           type="submit"
           style={{
             width: '30px', 
@@ -183,7 +154,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
             backgroundColor: 'white',
             border: '1px solid #ccc',
             borderRadius: '4px',
-            cursor: (quantity > 1 && !isUpdating) ? 'pointer' : 'not-allowed',
+            cursor: quantity > 1 ? 'pointer' : 'not-allowed',
             fontSize: '18px',
             fontWeight: 'bold',
           }}
@@ -206,7 +177,6 @@ function CartLineQuantity({line}: {line: CartLine}) {
         }}
       >
         <button 
-          disabled={isUpdating}
           type="submit"
           style={{
             width: '30px', 
@@ -214,7 +184,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
             backgroundColor: 'white',
             border: '1px solid #ccc',
             borderRadius: '4px',
-            cursor: isUpdating ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             fontSize: '18px',
             fontWeight: 'bold',
           }}
@@ -230,11 +200,10 @@ function CartLineQuantity({line}: {line: CartLine}) {
         inputs={{lineIds: [lineId]}}
       >
         <button 
-          disabled={isUpdating}
           type="submit"
           style={{
             padding: '0.4rem 0.75rem',
-            cursor: isUpdating ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             marginLeft: '0.5rem',
             backgroundColor: 'white',
             border: '1px solid black',
