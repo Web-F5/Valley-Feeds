@@ -140,27 +140,27 @@ function CartLineQuantity({line}: {line: CartLine}) {
 
   return (
     <div className="cart-line-quantity" style={{position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
-      {/* Loading Overlay */}
+      {/* Loading Overlay - More visible */}
       {isUpdating && (
         <div style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          top: '-5px',
+          left: '-5px',
+          right: '-5px',
+          bottom: '-5px',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 10,
           borderRadius: '4px',
         }}>
-          <div className="spinner" style={{
-            border: '3px solid #f3f3f3',
-            borderTop: '3px solid #10b981',
+          <div style={{
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #10b981',
             borderRadius: '50%',
-            width: '24px',
-            height: '24px',
+            width: '30px',
+            height: '30px',
             animation: 'spin 0.8s linear infinite',
           }} />
         </div>
@@ -186,7 +186,6 @@ function CartLineQuantity({line}: {line: CartLine}) {
             cursor: (quantity > 1 && !isUpdating) ? 'pointer' : 'not-allowed',
             fontSize: '18px',
             fontWeight: 'bold',
-            opacity: isUpdating ? 0.5 : 1,
           }}
         >
           −
@@ -218,7 +217,6 @@ function CartLineQuantity({line}: {line: CartLine}) {
             cursor: isUpdating ? 'not-allowed' : 'pointer',
             fontSize: '18px',
             fontWeight: 'bold',
-            opacity: isUpdating ? 0.5 : 1,
           }}
         >
           +
@@ -242,7 +240,6 @@ function CartLineQuantity({line}: {line: CartLine}) {
             border: '1px solid black',
             borderRadius: '4px',
             fontSize: '12px',
-            opacity: isUpdating ? 0.5 : 1,
           }}
         >
           Remove
