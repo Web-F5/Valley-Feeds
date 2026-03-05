@@ -39,7 +39,7 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
 
   return (
     <div className="mt-4 pb-2">
-      <Button asChild className="w-full" size="lg">
+      <Button asChild className="w-full text-white" size="lg">
         <a href={checkoutUrl} target="_self">
           Continue to Checkout
         </a>
