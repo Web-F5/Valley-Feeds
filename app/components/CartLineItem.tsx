@@ -1,7 +1,7 @@
 import type {CartLayout} from '~/components/CartMain';
 import {Image} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link, useFetcher} from 'react-router';
+import {Link, useNavigation} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
@@ -133,9 +133,39 @@ export function CartLineItem({
 function CartLineQuantity({line}: {line: CartLine}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity} = line;
+  const navigation = useNavigation();
+  
+  // Check if any form is submitting
+  const isUpdating = navigation.state === 'submitting' || navigation.state === 'loading';
 
   return (
-    <div className="cart-line-quantity" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
+    <div className="cart-line-quantity" style={{position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
+      {/* Loading Overlay */}
+      {isUpdating && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          borderRadius: '4px',
+        }}>
+          <div className="spinner" style={{
+            border: '3px solid #f3f3f3',
+            borderTop: '3px solid #10b981',
+            borderRadius: '50%',
+            width: '24px',
+            height: '24px',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+        </div>
+      )}
+
       {/* MINUS BUTTON */}
       <CartForm
         route="/cart"
@@ -145,7 +175,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
         }}
       >
         <button 
-          disabled={quantity <= 1} 
+          disabled={quantity <= 1 || isUpdating} 
           type="submit"
           style={{
             width: '30px', 
@@ -153,9 +183,10 @@ function CartLineQuantity({line}: {line: CartLine}) {
             backgroundColor: 'white',
             border: '1px solid #ccc',
             borderRadius: '4px',
-            cursor: quantity > 1 ? 'pointer' : 'not-allowed',
+            cursor: (quantity > 1 && !isUpdating) ? 'pointer' : 'not-allowed',
             fontSize: '18px',
             fontWeight: 'bold',
+            opacity: isUpdating ? 0.5 : 1,
           }}
         >
           −
@@ -176,6 +207,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
         }}
       >
         <button 
+          disabled={isUpdating}
           type="submit"
           style={{
             width: '30px', 
@@ -183,9 +215,10 @@ function CartLineQuantity({line}: {line: CartLine}) {
             backgroundColor: 'white',
             border: '1px solid #ccc',
             borderRadius: '4px',
-            cursor: 'pointer',
+            cursor: isUpdating ? 'not-allowed' : 'pointer',
             fontSize: '18px',
             fontWeight: 'bold',
+            opacity: isUpdating ? 0.5 : 1,
           }}
         >
           +
@@ -199,15 +232,17 @@ function CartLineQuantity({line}: {line: CartLine}) {
         inputs={{lineIds: [lineId]}}
       >
         <button 
+          disabled={isUpdating}
           type="submit"
           style={{
             padding: '0.4rem 0.75rem',
-            cursor: 'pointer',
+            cursor: isUpdating ? 'not-allowed' : 'pointer',
             marginLeft: '0.5rem',
             backgroundColor: 'white',
             border: '1px solid black',
             borderRadius: '4px',
-            fontSize: '12px'
+            fontSize: '12px',
+            opacity: isUpdating ? 0.5 : 1,
           }}
         >
           Remove
