@@ -118,10 +118,10 @@ export function SiteFooter() {
               <li className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-[#1E91BA] flex-shrink-0" />
                 <a
-                  href="mailto:info@valleyfeeds.com.au"
+                  href="mailto:orders@valleyfeeds.com.au"
                   className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm"
                 >
-                  info@valleyfeeds.com.au
+                  orders@valleyfeeds.com.au
                 </a>
               </li>
             </ul>
