@@ -146,6 +146,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
   return (
     <html lang="en">
       <head>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta httpEquiv="Content-Security-Policy" content="default-src 'self' https://cdn.shopify.com https://shopify.com http://localhost:* 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://cdn.shopify.com https://img.youtube.com https://maps.googleapis.com https://maps.google.com https://www.google.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://maps.googleapis.com; frame-src 'self' https://www.youtube.com https://maps.google.com https://maps.googleapis.com https://www.google.com;" />
