@@ -250,7 +250,7 @@ function ProductCard({product, variant, price, compareAt, image}: any) {
               data={image}
               aspectRatio="1/1"
               sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"
-              className="w-full object-cover rounded-t-lg"
+              className="w-full object-contain rounded-t-lg bg-white"
               loading="eager"
             />
           ) : (
