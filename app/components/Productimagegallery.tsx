@@ -92,7 +92,8 @@ function MainView({item, title}: {item: GalleryItem; title: string}) {
         data={item.image}
         alt={item.image.altText || title}
         className="w-full h-full object-contain"
-        sizes="(min-width: 1024px) 50vw, 100vw"
+        sizes="(min-width: 1024px) 600px, 100vw"
+        width={1200}
       />
     );
   }
