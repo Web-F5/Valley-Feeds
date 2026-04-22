@@ -109,7 +109,7 @@ export function ProductItem({
               <div className="text-xs text-amber-800">
                 <strong className="block mb-1">Shipping Notice</strong>
                 <p><strong className="block mb-1">Local delivery is available within 100km of Katandra West.</strong></p>
-                <p>This item is restricted via Aus Post rules, possibly exceeding their 22kg limit.</p>
+                <p>This item is restricted via Aus Post rules, possibly exceeding 22kg.</p>
                 <p>Outside of this range will require you to arrange a courier.</p>
               </div>
             </div>
