@@ -88,13 +88,15 @@ function buildGalleryItems(
 function MainView({item, title}: {item: GalleryItem; title: string}) {
   if (item.kind === 'image') {
     return (
-      <Image
-        data={item.image}
-        alt={item.image.altText || title}
-        className="w-full h-full object-contain"
-        sizes="(min-width: 1024px) 600px, 100vw"
-        width={1200}
-      />
+      <div className="aspect-square w-full p-4">
+        <Image
+          data={item.image}
+          alt={item.image.altText || title}
+          className="w-full h-full object-contain"
+          sizes="(min-width: 1024px) 600px, 100vw"
+          width={1200}
+        />
+      </div>
     );
   }
 
