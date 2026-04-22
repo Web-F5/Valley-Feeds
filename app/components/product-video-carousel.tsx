@@ -230,13 +230,15 @@ export function ProductVideoCarousel({products}: Props) {
                 className="w-full h-full object-cover"
                 loading="lazy"
                 onError={(e) => {
-                  if (
-                    video.type === 'youtube' &&
-                    video.youtubeId &&
-                    !e.currentTarget.dataset.fallback
-                  ) {
-                    e.currentTarget.dataset.fallback = 'true';
-                    e.currentTarget.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                  if (video.type === 'youtube' && video.youtubeId) {
+                    const current = e.currentTarget;
+                    if (!current.dataset.fallback) {
+                      current.dataset.fallback = '1';
+                      current.src = `https://img.youtube.com/vi/${video.youtubeId}/sddefault.jpg`;
+                    } else if (current.dataset.fallback === '1') {
+                      current.dataset.fallback = '2';
+                      current.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                    }
                   }
                 }}
               />

@@ -11,11 +11,13 @@ const COLLECTION_VIDEOS_QUERY = `#graphql
               mediaContentType
               ... on ExternalVideo {
                 embedUrl
-                previewImage { url }
+                previewImage { 
+                url(transform: { maxWidth: 1280 })
               }
               ... on Video {
                 sources { url mimeType }
-                previewImage { url }
+              previewImage { 
+                url(transform: { maxWidth: 1280 })
               }
             }
           }
