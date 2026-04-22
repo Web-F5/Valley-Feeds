@@ -75,13 +75,12 @@ export function ProductItem({
     <div className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
       {/* Product Image - Link */}
       <Link to={`/products/${product.handle}`} className="block">
-        <div className="aspect-square bg-gray-100 overflow-hidden">
+        <div className="aspect-square w-full p-2 bg-white">
           {product.featuredImage ? (
             <Image
               data={product.featuredImage}
               alt={product.featuredImage.altText || product.title}
-              aspectRatio="1/1"
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-contain"
               sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               loading={loading}
             />

@@ -118,12 +118,14 @@ function SearchProductCard({product, term}: {product: any; term: string}) {
       <Link to={productUrl} prefetch="intent">
         <div className="aspect-square bg-stone-50 overflow-hidden rounded-t-xl">
           {image ? (
-            <Image
-              data={image}
-              alt={product.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            />
+            <div className="aspect-square w-full p-2">
+              <Image
+                data={image}
+                alt={product.title}
+                className="w-full h-full object-contain"
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+              />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <svg

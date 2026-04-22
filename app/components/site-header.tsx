@@ -156,7 +156,6 @@ export function SiteHeader({ menu }: { menu: MenuItem[] }) {
               </Link>
 
 
-
               {/* Mobile Shop Categories (TOP LEVEL ONLY) */}
               {shopCategories.map(category => (
                 <Link
@@ -168,7 +167,6 @@ export function SiteHeader({ menu }: { menu: MenuItem[] }) {
                   {category.title}
                 </Link>
               ))}
-
 
 
               <Link
