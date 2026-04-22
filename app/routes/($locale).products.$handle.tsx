@@ -13,6 +13,7 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductVideo} from '~/components/ProductVideo'
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {ProductImageGallery} from '~/components/Productimagegallery'
 
 export const meta: Route.MetaFunction = ({data}: Route.MetaArgs) => {
   return [
@@ -101,27 +102,18 @@ export default function Product() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Product Image */}
-        <div className="lg:sticky lg:top-8 h-fit">
-          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
-            {selectedVariant?.image ? (
-              <Image
-                data={selectedVariant.image}
-                alt={selectedVariant.image.altText || title}
-                aspectRatio="1/1"
-                className="w-full object-contain"
-                sizes="(min-width: 1024px) 50vw, 100vw"
-              />
-            ) : (
-              <div className="w-full aspect-square bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">No image available</span>
-              </div>
-            )}
-          </div>
+            {/* Product Image */}
+            <div className="lg:sticky lg:top-8 h-fit">
+      <ProductImageGallery
+        selectedImage={selectedVariant?.image}
+        images={product.images?.nodes ?? []}
+        media={product.media}
+        title={title}
+      />
+      {/* Video below image — only renders if product has one */}
+      {product.media && <ProductVideo media={product.media} />}
+    </div>
 
-          {/* Video below image — only renders if product has one */}
-          {product.media && <ProductVideo media={product.media} />}
-        </div>
 
         {/* Product Info */}
         <div className="space-y-6">
@@ -261,28 +253,37 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
 
 const PRODUCT_FRAGMENT = `#graphql
   fragment Product on Product {
-    id
-    title
-    vendor
-    handle
-    descriptionHtml
-    description
-    encodedVariantExistence
-    encodedVariantAvailability
-    media(first: 10) {
-      nodes {
-        mediaContentType
-        ... on ExternalVideo {
-          embedUrl
-          previewImage { url }
-        }
-        ... on Video {
-          sources { url mimeType }
-          previewImage { url }
-        }
+  id
+  title
+  vendor
+  handle
+  descriptionHtml
+  description
+  encodedVariantExistence
+  encodedVariantAvailability
+  images(first: 20) {
+    nodes {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+  media(first: 10) {
+    nodes {
+      mediaContentType
+      ... on ExternalVideo {
+        embedUrl
+        previewImage { url }
+      }
+      ... on Video {
+        sources { url mimeType }
+        previewImage { url }
       }
     }
-    options {
+  }
+  options {
       name
       optionValues {
         name
