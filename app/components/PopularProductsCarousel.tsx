@@ -94,11 +94,11 @@ function ProductCard({product}: {product: any}) {
       className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
     >
       {product.featuredImage && (
-        <div className="w-full aspect-square overflow-hidden">
+        <div className="w-full aspect-square p-2 bg-white">
           <Image
             data={product.featuredImage}
             sizes="256px"
-            className="w-full h-full object-contain bg-white"
+            className="w-full h-full object-contain"
           />
         </div>
       )}

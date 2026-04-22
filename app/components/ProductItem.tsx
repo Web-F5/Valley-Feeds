@@ -108,9 +108,9 @@ export function ProductItem({
             <div className="flex items-start gap-2">
               <span className="text-amber-600 text-lg flex-shrink-0">⚠️</span>
               <div className="text-xs text-amber-800">
-                <strong className="block mb-1">Heavy Item Shipping Notice</strong>
+                <strong className="block mb-1">Shipping Notice</strong>
                 <p><strong className="block mb-1">Local delivery is available within 100km of Katandra West.</strong></p>
-                <p>As this item exceeds Aus Post's 22kg limit, or restricted via Aus Post rules.</p> 
+                <p>This item is restricted via Aus Post rules, possibly exceeding their 22kg limit.</p>
                 <p>Outside of this range will require you to arrange a courier.</p>
               </div>
             </div>

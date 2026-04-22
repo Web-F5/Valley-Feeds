@@ -224,13 +224,15 @@ return (
         {/* Image Link */}
         <Link to={`/products/${product.handle}`}>
           {image ? (
-            <Image
-              data={image}
-              aspectRatio="1/1"
-              sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"
-              className="w-full object-contain rounded-t-lg bg-white"
-              loading="eager"
-            />
+            <div className="p-2 bg-white">
+              <Image
+                data={image}
+                aspectRatio="1/1"
+                sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"
+                className="w-full object-contain rounded-lg bg-white"
+                loading="eager"
+              />
+            </div>
           ) : (
             <div className="w-full aspect-square bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
               No Image
