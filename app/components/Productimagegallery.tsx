@@ -91,8 +91,7 @@ function MainView({item, title}: {item: GalleryItem; title: string}) {
       <Image
         data={item.image}
         alt={item.image.altText || title}
-        aspectRatio="1/1"
-        className="w-full object-contain"
+        className="w-full h-full object-contain"
         sizes="(min-width: 1024px) 50vw, 100vw"
       />
     );
@@ -282,7 +281,7 @@ export function ProductImageGallery({selectedImage, images, media, title}: Props
     <div className="flex flex-col gap-3">
       {/* Main image / video */}
       <div
-        className="bg-white rounded-lg overflow-hidden shadow-sm select-none"
+        className="bg-white rounded-lg overflow-hidden shadow-sm flex items-center justify-center min-h-64 lg:min-h-96 select-none"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
