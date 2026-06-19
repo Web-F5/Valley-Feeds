@@ -4,3 +4,130 @@
  */
 
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
+
+/* ── Rich-text content styling (policies + delivery page) ── */
+.vf-prose {
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.vf-prose h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #24282E;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  line-height: 1.2;
+}
+
+.vf-prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #24282E;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #e7f4f9;
+  line-height: 1.3;
+}
+
+.vf-prose h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #24282E;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.vf-prose h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #24282E;
+  margin-top: 1.25rem;
+  margin-bottom: 0.4rem;
+}
+
+.vf-prose p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.vf-prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.vf-prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.vf-prose li {
+  margin-bottom: 0.35rem;
+}
+
+.vf-prose a {
+  color: #1E91BA;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.vf-prose a:hover {
+  color: #24282E;
+}
+
+.vf-prose strong {
+  font-weight: 600;
+  color: #24282E;
+}
+
+.vf-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.vf-prose table th {
+  background-color: #24282E;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  text-align: left;
+}
+
+.vf-prose table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.vf-prose table tr:nth-child(even) td {
+  background-color: #f9fafb;
+}
+
+.vf-prose hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 2rem 0;
+}
+
+.vf-prose blockquote {
+  border-left: 4px solid #1E91BA;
+  background-color: #e8f4f8;
+  padding: 0.75rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: 0 0.375rem 0.375rem 0;
+  color: #374151;
+}
+
+.vf-prose img {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+}

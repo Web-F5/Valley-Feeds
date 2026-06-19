@@ -45,15 +45,19 @@ export default function Policy() {
   const {policy} = useLoaderData<typeof loader>();
 
   return (
-    <div className="policy">
-      <br />
-      <br />
-      <div>
-        <Link to="/policies">← Back to Policies</Link>
-      </div>
-      <br />
-      <h1>{policy.title}</h1>
-      <div dangerouslySetInnerHTML={{__html: policy.body}} />
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Link
+        to="/policies"
+        className="inline-flex items-center text-sm text-[#1E91BA] hover:text-[#24282E] transition-colors mb-8"
+      >
+        ← Back to Policies
+      </Link>
+      <h1 className="text-4xl font-bold text-[#24282E] mb-8">{policy.title}</h1>
+      <div
+        className="vf-prose"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{__html: policy.body}}
+      />
     </div>
   );
 }
