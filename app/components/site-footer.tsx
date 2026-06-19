@@ -25,31 +25,31 @@ export function SiteFooter() {
             <h3 className="font-bold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/shop" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
+                <Link to="/#shop-by-your-needs" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
                   Product Categories
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/delivery-information"
+                <a
+                  href="https://valleyfeeds.com.au/pages/delivery"
                   className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm"
                 >
                   Shipping/Delivery Information
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/refund-policy" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
+                <Link to="/policies/refund-policy" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
                   Refund Policy
                 </Link>
               </li>
               <li>
-                <Link to="/privacy-policy" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
+                <Link to="/policies/privacy-policy" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
                   Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/terms-of-service"
+                  to="/policies/terms-of-service"
                   className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm"
                 >
                   Terms of Service
@@ -63,36 +63,36 @@ export function SiteFooter() {
             <h3 className="font-bold text-lg mb-4">Shop</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/shop/horses" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
+                <Link to="/collections/horses" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
                   Horses
                 </Link>
               </li>
               <li>
-                <Link to="/shop/dogs" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
+                <Link to="/collections/dogs" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
                   Dogs
                 </Link>
               </li>
               <li>
-                <Link to="/shop/cats" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
+                <Link to="/collections/cats" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
                   Cats
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/shop/bird-poultry"
+                  to="/collections/bird-and-poultry"
                   className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm"
                 >
                   Bird and Poultry
                 </Link>
               </li>
               <li>
-                <Link to="/shop/livestock" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
+                <Link to="/collections/livestock" className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm">
                   Livestock
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/shop/farm-supplies"
+                  to="/collections/farm-supplies"
                   className="text-stone-300 hover:text-[#1E91BA] transition-colors text-sm"
                 >
                   Farm Supplies
@@ -102,7 +102,7 @@ export function SiteFooter() {
           </div>
 
           {/* Contact Info */}
-          <div>
+          <div id="contact-us">
             <h3 className="font-bold text-lg mb-4">Contact Us</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">

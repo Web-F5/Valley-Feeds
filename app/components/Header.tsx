@@ -327,15 +327,12 @@ export function Header({
                 >
                   Katandra West Store
                 </Link>
-                <button
-                  onClick={() => {
-                    const footer = document.querySelector('footer');
-                    footer?.scrollIntoView({behavior: 'smooth'});
-                  }}
+                <Link
+                  to="/#contact-us"
                   className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
                 >
                   Contact
-                </button>
+                </Link>
               </>
             )}
           </nav>
@@ -472,16 +469,13 @@ export function Header({
                   >
                     Katandra West Store
                   </Link>
-                  <button
-                    onClick={() => {
-                      const footer = document.querySelector('footer');
-                      footer?.scrollIntoView({behavior: 'smooth'});
-                      setMobileMenuOpen(false);
-                    }}
+                  <Link
+                    to="/#contact-us"
                     className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
                     Contact
-                  </button>
+                  </Link>
                   <a
                     href="tel:0418278542"
                     className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors"
